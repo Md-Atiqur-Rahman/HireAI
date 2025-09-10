@@ -32,7 +32,6 @@ def calculate_semantic_similarity(text1, text2):
     embedding2 = model.encode(text2, convert_to_tensor=True)
     similarity_score = util.pytorch_cos_sim(embedding1, embedding2)
     return float(similarity_score[0][0]) * 100
-
 # Streamlit UI
 st.title("📄 Resume Analyzer with Enhanced Fit Score")
 
@@ -97,6 +96,14 @@ if jd_file and resume_files:
                 st.write(f"**Fit Score:** {result['Fit Score (%)']}%")
                 st.write("**Missing Keywords:**")
                 st.write(result['Missing Keywords'] if result['Missing Keywords'] else "None ✅")
+
+        # 🏆 Ranked Candidates by Fit Score
+        df_ranked = df.sort_values(by="Fit Score (%)", ascending=False).reset_index(drop=True)
+        df_ranked.index += 1
+        df_ranked.index.name = "Rank"
+
+        st.subheader("🏆 Ranked Candidates by Fit Score")
+        st.dataframe(df_ranked)
 
         csv = df.to_csv(index=False).encode("utf-8")
         st.download_button("📥 Download Results as CSV", data=csv, file_name="resume_analysis_results.csv", mime="text/csv")

@@ -1,3 +1,4 @@
+from pyresparser import ResumeParser
 import streamlit as st
 import pandas as pd
 import pdfplumber
@@ -72,12 +73,28 @@ def extract_phone(text):
     match = re.search(r"(\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}", text)
     return match.group(0) if match else "Not found"
 
+def extract_experience(text):
+    match = re.search(r"(\d+)\s+(?:years|yrs)\s+(?:of\s+)?experience", text, re.IGNORECASE)
+    return f"{match.group(1)} years" if match else "Not found"
+
 def calculate_semantic_similarity(text1, text2):
     model = SentenceTransformer('all-MiniLM-L6-v2')
     embedding1 = model.encode(text1, convert_to_tensor=True)
     embedding2 = model.encode(text2, convert_to_tensor=True)
     similarity_score = util.pytorch_cos_sim(embedding1, embedding2)
     return float(similarity_score[0][0]) * 100
+
+def extract_structured_experience(file_path):
+    data = ResumeParser(file_path).get_extracted_data()
+    print("🔍 Raw ResumeParser Output:", data)
+
+    return {
+        "Designation": data.get("designation", []),
+        "Company Names": data.get("company_names", []),
+        "Total Experience": data.get("total_experience", "Not found")
+    }
+
+
 
 # ✅ Run analysis only when triggered
 if st.session_state.analyze_triggered and not st.session_state.analysis_done:
@@ -90,13 +107,14 @@ if st.session_state.analyze_triggered and not st.session_state.analysis_done:
     progress_bar.progress(0)
 
     for idx, resume_file in enumerate(st.session_state.resume_files):
-        status_text.text(f"🔍 Analyzing: {resume_file.name} ({idx + 1}/{total_resumes})")
+        status_text.text(f"🔍 Analyzing: {resume_file.name} ({idx}/{total_resumes})")
 
         resume_text = extract_text_from_pdf(resume_file)
         resume_keywords = extract_keywords(resume_text)
         email = extract_email(resume_text)
         phone = extract_phone(resume_text)
-
+        experience = extract_experience(resume_text)
+        structured_exp = extract_structured_experience(resume_file)
         documents = [st.session_state.jd_text, resume_text]
         vectorizer = TfidfVectorizer(stop_words='english')
         tfidf_matrix = vectorizer.fit_transform(documents)
@@ -117,11 +135,14 @@ if st.session_state.analyze_triggered and not st.session_state.analysis_done:
             "Candidate": resume_file.name,
             "Email": email,
             "Contact": phone,
+            "Experience": experience,
             "TF-IDF Match (%)": round(tfidf_match_score, 2),
             "Semantic Similarity (%)": round(semantic_similarity_score, 2),
             "Keyword Coverage (%)": round(keyword_coverage_score, 2),
             "Fit Score (%)": round(fit_score, 2),
-            "Missing Keywords": ", ".join(missing_keywords)
+            "Missing Keywords": ", ".join(missing_keywords),
+            "Experience": structured_exp.get("Total Experience", "Not found"),
+            "Experience Details": structured_exp
         }
 
         st.session_state.results.append(result)
@@ -176,6 +197,13 @@ if st.session_state.analysis_done and st.session_state.results:
             with st.expander("📋 Detailed Analysis"):
                 st.write(f"**Email Address:** {result['Email']}")
                 st.write(f"**Contact Number:** {result['Contact']}")
+                designations = result['Experience Details'].get('Designation', [])
+                companies = result['Experience Details'].get('Company Names', [])
+
+                st.write("**Total Experience:**", result['Experience Details'].get('Total Experience', 'Not found'))
+                st.write("**Designations:**", ", ".join(designations) if isinstance(designations, list) else designations)
+                st.write("**Companies:**", ", ".join(companies) if isinstance(companies, list) else companies)
+
                 st.write(f"**Fit Score (%):** {result["Fit Score (%)"]}")
                 st.write(f"**TF-IDF Match Score:** {result['TF-IDF Match (%)']}%")
                 st.write(f"**Semantic Similarity Score:** {result['Semantic Similarity (%)']}%")

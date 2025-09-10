@@ -1,0 +1,4 @@
+Candidate,Match Score (%),Similarity Score (%),Fit Score (%),Missing Keywords
+MD Ashik.pdf,27.78,31.57,29.3,"apis, aws, plus, docker, pipelines, django, azure, kubernetes, knowledge, cloud, like, python, looking"
+Md Atiqur Rahman.pdf,38.89,35.75,37.64,"apis, aws, plus, rest, pipelines, django, kubernetes, cloud, like, python, looking"
+MD Sagor.pdf,22.22,40.46,29.52,"apis, aws, plus, docker, rest, pipelines, django, azure, kubernetes, platforms, cloud, like, python, looking"

@@ -33,7 +33,7 @@ def calculate_semantic_similarity(text1, text2):
     similarity_score = util.pytorch_cos_sim(embedding1, embedding2)
     return float(similarity_score[0][0]) * 100
 # Streamlit UI
-st.title("📄 Resume Analyzer with Enhanced Fit Score")
+st.title("📄 Resume Analyzer (HireAI))")
 
 jd_file = st.file_uploader("Upload Job Description (TXT)", type=["txt"])
 resume_files = st.file_uploader("Upload Resume PDFs", type=["pdf"], accept_multiple_files=True)

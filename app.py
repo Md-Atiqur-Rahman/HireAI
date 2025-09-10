@@ -5,6 +5,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sentence_transformers import SentenceTransformer, util
 import plotly.express as px
 
 # Download NLTK data
@@ -25,8 +26,15 @@ def extract_keywords(text):
     tokens = word_tokenize(text.lower())
     return [word for word in tokens if word.isalpha() and word not in stopwords.words('english')]
 
+def calculate_semantic_similarity(text1, text2):
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    embedding1 = model.encode(text1, convert_to_tensor=True)
+    embedding2 = model.encode(text2, convert_to_tensor=True)
+    similarity_score = util.pytorch_cos_sim(embedding1, embedding2)
+    return float(similarity_score[0][0]) * 100
+
 # Streamlit UI
-st.title("📄 Resume Analyzer with TF-IDF Keyword Prioritization")
+st.title("📄 Resume Analyzer with Enhanced Fit Score")
 
 jd_file = st.file_uploader("Upload Job Description (TXT)", type=["txt"])
 resume_files = st.file_uploader("Upload Resume PDFs", type=["pdf"], accept_multiple_files=True)
@@ -49,24 +57,27 @@ if jd_file and resume_files:
             jd_scores = tfidf_matrix[0].toarray()[0]
             resume_scores = tfidf_matrix[1].toarray()[0]
 
-            missing_keywords = []
-            for i, word in enumerate(feature_names):
-                if jd_scores[i] > 0.1 and resume_scores[i] == 0:
-                    missing_keywords.append(word)
+            tfidf_match_score = sum([jd_scores[i] for i in range(len(feature_names)) if jd_scores[i] > 0.1 and resume_scores[i] > 0]) / sum(jd_scores) * 100 if sum(jd_scores) > 0 else 0
 
-            # Optional: filter out generic terms
-            generic_terms = {
-                "also", "us", "x", "join", "apply", "offer", "required", "preferred",
-                "related", "within", "looking", "invite"
-            }
+            # Semantic similarity
+            semantic_similarity_score = calculate_semantic_similarity(resume_text, jd_text)
+
+            # Keyword coverage
+            keyword_coverage_score = len(set(resume_keywords).intersection(set(jd_keywords))) / len(set(jd_keywords)) * 100 if jd_keywords else 0
+
+            # Final fit score
+            fit_score = (0.4 * tfidf_match_score) + (0.4 * semantic_similarity_score) + (0.2 * keyword_coverage_score)
+
+            # Missing keywords
+            missing_keywords = [word for i, word in enumerate(feature_names) if jd_scores[i] > 0.1 and resume_scores[i] == 0]
+            generic_terms = {"also", "us", "x", "join", "apply", "offer", "required", "preferred", "related", "within", "looking", "invite"}
             missing_keywords = [kw for kw in missing_keywords if kw not in generic_terms]
-
-            match_score = len(set(resume_keywords).intersection(set(jd_keywords))) / len(set(jd_keywords)) * 100 if jd_keywords else 0
-            fit_score = match_score  # simplified fit score using match only
 
             results.append({
                 "Candidate": resume_file.name,
-                "Match Score (%)": round(match_score, 2),
+                "TF-IDF Match (%)": round(tfidf_match_score, 2),
+                "Semantic Similarity (%)": round(semantic_similarity_score, 2),
+                "Keyword Coverage (%)": round(keyword_coverage_score, 2),
                 "Fit Score (%)": round(fit_score, 2),
                 "Missing Keywords": ", ".join(missing_keywords)
             })
@@ -80,7 +91,9 @@ if jd_file and resume_files:
         st.subheader("📋 Detailed Analysis")
         for result in results:
             with st.expander(f"Candidate: {result['Candidate']}"):
-                st.write(f"**Match Score:** {result['Match Score (%)']}%")
+                st.write(f"**TF-IDF Match Score:** {result['TF-IDF Match (%)']}%")
+                st.write(f"**Semantic Similarity Score:** {result['Semantic Similarity (%)']}%")
+                st.write(f"**Keyword Coverage Score:** {result['Keyword Coverage (%)']}%")
                 st.write(f"**Fit Score:** {result['Fit Score (%)']}%")
                 st.write("**Missing Keywords:**")
                 st.write(result['Missing Keywords'] if result['Missing Keywords'] else "None ✅")

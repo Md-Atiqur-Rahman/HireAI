@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import pdfplumber
+import re
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
@@ -40,7 +41,7 @@ if st.session_state.jd_file and st.session_state.resume_files_input:
     st.markdown("### 🔍 Ready to Analyze Resumes")
     if st.button("🔍 Analyze Resumes"):
         st.session_state.analyze_triggered = True
-        st.session_state.analysis_done = False  # ✅ Allow re-analysis
+        st.session_state.analysis_done = False
 
 # Layout placeholders
 progress_bar = st.empty()
@@ -62,6 +63,14 @@ def extract_text_from_pdf(file):
 def extract_keywords(text):
     tokens = word_tokenize(text.lower())
     return [word for word in tokens if word.isalpha() and word not in stopwords.words('english')]
+
+def extract_email(text):
+    match = re.search(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", text)
+    return match.group(0) if match else "Not found"
+
+def extract_phone(text):
+    match = re.search(r"(\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}", text)
+    return match.group(0) if match else "Not found"
 
 def calculate_semantic_similarity(text1, text2):
     model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -85,6 +94,8 @@ if st.session_state.analyze_triggered and not st.session_state.analysis_done:
 
         resume_text = extract_text_from_pdf(resume_file)
         resume_keywords = extract_keywords(resume_text)
+        email = extract_email(resume_text)
+        phone = extract_phone(resume_text)
 
         documents = [st.session_state.jd_text, resume_text]
         vectorizer = TfidfVectorizer(stop_words='english')
@@ -104,6 +115,8 @@ if st.session_state.analyze_triggered and not st.session_state.analysis_done:
 
         result = {
             "Candidate": resume_file.name,
+            "Email": email,
+            "Contact": phone,
             "TF-IDF Match (%)": round(tfidf_match_score, 2),
             "Semantic Similarity (%)": round(semantic_similarity_score, 2),
             "Keyword Coverage (%)": round(keyword_coverage_score, 2),
@@ -146,7 +159,6 @@ if st.session_state.analysis_done and st.session_state.results:
         st.subheader("🏆 Ranked Candidates by Fit Score")
         st.dataframe(df_final)
 
-        # ✅ CSV download button placed right below the rank table
         csv = df_final.to_csv(index=False).encode("utf-8")
         st.download_button(
             "📥 Download All Results as CSV",
@@ -162,6 +174,9 @@ if st.session_state.analysis_done and st.session_state.results:
             st.metric("Fit Score (%)", result["Fit Score (%)"])
 
             with st.expander("📋 Detailed Analysis"):
+                st.write(f"**Email Address:** {result['Email']}")
+                st.write(f"**Contact Number:** {result['Contact']}")
+                st.write(f"**Fit Score (%):** {result["Fit Score (%)"]}")
                 st.write(f"**TF-IDF Match Score:** {result['TF-IDF Match (%)']}%")
                 st.write(f"**Semantic Similarity Score:** {result['Semantic Similarity (%)']}%")
                 st.write(f"**Keyword Coverage Score:** {result['Keyword Coverage (%)']}%")

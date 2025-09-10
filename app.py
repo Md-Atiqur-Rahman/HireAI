@@ -12,6 +12,43 @@ import plotly.express as px
 nltk.download('punkt')
 nltk.download('stopwords')
 
+# Initialize session state
+for key in ["results", "analysis_done", "jd_text", "jd_keywords", "resume_files", "jd_file", "resume_files_input", "analyze_triggered"]:
+    if key not in st.session_state:
+        st.session_state[key] = [] if "files" in key or key == "jd_keywords" else False if "done" in key or "triggered" in key else ""
+
+# 🔄 Reset button
+if st.button("🔄 Reset App"):
+    for key in ["results", "analysis_done", "jd_text", "jd_keywords", "resume_files", "analyze_triggered"]:
+        st.session_state[key] = [] if "results" in key or key == "jd_keywords" else False if "done" in key or "triggered" in key else ""
+    st.rerun()
+
+# UI
+st.title("📄 Resume Analyzer (HireAI)")
+
+jd_file_input = st.file_uploader("Upload Job Description (TXT)", type=["txt"])
+resume_files_input = st.file_uploader("Upload Resume PDFs", type=["pdf"], accept_multiple_files=True)
+
+# Store uploaded files in session state
+if jd_file_input:
+    st.session_state.jd_file = jd_file_input
+if resume_files_input:
+    st.session_state.resume_files_input = resume_files_input
+
+# ✅ Always show Analyze button at top if files are uploaded
+if st.session_state.jd_file and st.session_state.resume_files_input:
+    st.markdown("### 🔍 Ready to Analyze Resumes")
+    if st.button("🔍 Analyze Resumes"):
+        st.session_state.analyze_triggered = True
+        st.session_state.analysis_done = False  # ✅ Allow re-analysis
+
+# Layout placeholders
+progress_bar = st.empty()
+status_text = st.empty()
+chart_placeholder = st.empty()
+rank_placeholder = st.empty()
+resume_analysis_container = st.container()
+
 # Helper functions
 def extract_text_from_pdf(file):
     text = ""
@@ -32,78 +69,101 @@ def calculate_semantic_similarity(text1, text2):
     embedding2 = model.encode(text2, convert_to_tensor=True)
     similarity_score = util.pytorch_cos_sim(embedding1, embedding2)
     return float(similarity_score[0][0]) * 100
-# Streamlit UI
-st.title("📄 Resume Analyzer (HireAI))")
 
-jd_file = st.file_uploader("Upload Job Description (TXT)", type=["txt"])
-resume_files = st.file_uploader("Upload Resume PDFs", type=["pdf"], accept_multiple_files=True)
+# ✅ Run analysis only when triggered
+if st.session_state.analyze_triggered and not st.session_state.analysis_done:
+    st.session_state.jd_text = st.session_state.jd_file.read().decode("utf-8")
+    st.session_state.jd_keywords = extract_keywords(st.session_state.jd_text)
+    st.session_state.resume_files = st.session_state.resume_files_input
+    st.session_state.results = []
 
-if jd_file and resume_files:
-    if st.button("🔍 Analyze Resumes"):
-        jd_text = jd_file.read().decode("utf-8")
-        jd_keywords = extract_keywords(jd_text)
+    total_resumes = len(st.session_state.resume_files)
+    progress_bar.progress(0)
 
-        results = []
-        for resume_file in resume_files:
-            resume_text = extract_text_from_pdf(resume_file)
-            resume_keywords = extract_keywords(resume_text)
+    for idx, resume_file in enumerate(st.session_state.resume_files):
+        status_text.text(f"🔍 Analyzing: {resume_file.name} ({idx + 1}/{total_resumes})")
 
-            # TF-IDF relevance scoring
-            documents = [jd_text, resume_text]
-            vectorizer = TfidfVectorizer(stop_words='english')
-            tfidf_matrix = vectorizer.fit_transform(documents)
-            feature_names = vectorizer.get_feature_names_out()
-            jd_scores = tfidf_matrix[0].toarray()[0]
-            resume_scores = tfidf_matrix[1].toarray()[0]
+        resume_text = extract_text_from_pdf(resume_file)
+        resume_keywords = extract_keywords(resume_text)
 
-            tfidf_match_score = sum([jd_scores[i] for i in range(len(feature_names)) if jd_scores[i] > 0.1 and resume_scores[i] > 0]) / sum(jd_scores) * 100 if sum(jd_scores) > 0 else 0
+        documents = [st.session_state.jd_text, resume_text]
+        vectorizer = TfidfVectorizer(stop_words='english')
+        tfidf_matrix = vectorizer.fit_transform(documents)
+        feature_names = vectorizer.get_feature_names_out()
+        jd_scores = tfidf_matrix[0].toarray()[0]
+        resume_scores = tfidf_matrix[1].toarray()[0]
 
-            # Semantic similarity
-            semantic_similarity_score = calculate_semantic_similarity(resume_text, jd_text)
+        tfidf_match_score = sum([jd_scores[i] for i in range(len(feature_names)) if jd_scores[i] > 0.1 and resume_scores[i] > 0]) / sum(jd_scores) * 100 if sum(jd_scores) > 0 else 0
+        semantic_similarity_score = calculate_semantic_similarity(resume_text, st.session_state.jd_text)
+        keyword_coverage_score = len(set(resume_keywords).intersection(set(st.session_state.jd_keywords))) / len(set(st.session_state.jd_keywords)) * 100 if st.session_state.jd_keywords else 0
+        fit_score = (0.4 * tfidf_match_score) + (0.4 * semantic_similarity_score) + (0.2 * keyword_coverage_score)
 
-            # Keyword coverage
-            keyword_coverage_score = len(set(resume_keywords).intersection(set(jd_keywords))) / len(set(jd_keywords)) * 100 if jd_keywords else 0
+        missing_keywords = [word for i, word in enumerate(feature_names) if jd_scores[i] > 0.1 and resume_scores[i] == 0]
+        generic_terms = {"also", "us", "x", "join", "apply", "offer", "required", "preferred", "related", "within", "looking", "invite"}
+        missing_keywords = [kw for kw in missing_keywords if kw not in generic_terms]
 
-            # Final fit score
-            fit_score = (0.4 * tfidf_match_score) + (0.4 * semantic_similarity_score) + (0.2 * keyword_coverage_score)
+        result = {
+            "Candidate": resume_file.name,
+            "TF-IDF Match (%)": round(tfidf_match_score, 2),
+            "Semantic Similarity (%)": round(semantic_similarity_score, 2),
+            "Keyword Coverage (%)": round(keyword_coverage_score, 2),
+            "Fit Score (%)": round(fit_score, 2),
+            "Missing Keywords": ", ".join(missing_keywords)
+        }
 
-            # Missing keywords
-            missing_keywords = [word for i, word in enumerate(feature_names) if jd_scores[i] > 0.1 and resume_scores[i] == 0]
-            generic_terms = {"also", "us", "x", "join", "apply", "offer", "required", "preferred", "related", "within", "looking", "invite"}
-            missing_keywords = [kw for kw in missing_keywords if kw not in generic_terms]
+        st.session_state.results.append(result)
 
-            results.append({
-                "Candidate": resume_file.name,
-                "TF-IDF Match (%)": round(tfidf_match_score, 2),
-                "Semantic Similarity (%)": round(semantic_similarity_score, 2),
-                "Keyword Coverage (%)": round(keyword_coverage_score, 2),
-                "Fit Score (%)": round(fit_score, 2),
-                "Missing Keywords": ", ".join(missing_keywords)
-            })
+        df_so_far = pd.DataFrame(st.session_state.results).sort_values(by="Fit Score (%)", ascending=False).reset_index(drop=True)
+        df_so_far.index += 1
+        df_so_far.index.name = "Rank"
 
-        df = pd.DataFrame(results)
+        with chart_placeholder.container():
+            st.subheader("📊 Fit Score Comparison")
+            fig = px.bar(df_so_far, x="Candidate", y="Fit Score (%)", color="Candidate", title="Fit Score per Candidate")
+            st.plotly_chart(fig, key=f"realtime_chart_{idx}")
 
+        with rank_placeholder.container():
+            st.subheader("🏆 Ranked Candidates by Fit Score")
+            st.dataframe(df_so_far)
+
+        progress_bar.progress((idx + 1) / total_resumes)
+
+    status_text.text("✅ All resumes analyzed successfully!")
+    st.session_state.analysis_done = True
+
+# ✅ Re-render everything if analysis is done
+if st.session_state.analysis_done and st.session_state.results:
+    df_final = pd.DataFrame(st.session_state.results).sort_values(by="Fit Score (%)", ascending=False).reset_index(drop=True)
+    df_final.index += 1
+    df_final.index.name = "Rank"
+
+    with chart_placeholder.container():
         st.subheader("📊 Fit Score Comparison")
-        fig = px.bar(df, x="Candidate", y="Fit Score (%)", color="Candidate", title="Fit Score per Candidate")
-        st.plotly_chart(fig)
+        fig = px.bar(df_final, x="Candidate", y="Fit Score (%)", color="Candidate", title="Fit Score per Candidate")
+        st.plotly_chart(fig, key="final_chart")
 
-        st.subheader("📋 Detailed Analysis")
-        for result in results:
-            with st.expander(f"Candidate: {result['Candidate']}"):
+    with rank_placeholder.container():
+        st.subheader("🏆 Ranked Candidates by Fit Score")
+        st.dataframe(df_final)
+
+        # ✅ CSV download button placed right below the rank table
+        csv = df_final.to_csv(index=False).encode("utf-8")
+        st.download_button(
+            "📥 Download All Results as CSV",
+            data=csv,
+            file_name="resume_analysis_results.csv",
+            mime="text/csv",
+            key="download_rank_table"
+        )
+
+    with resume_analysis_container.container():
+        for result in st.session_state.results:
+            st.subheader(f"📄 Analysis for {result['Candidate']}")
+            st.metric("Fit Score (%)", result["Fit Score (%)"])
+
+            with st.expander("📋 Detailed Analysis"):
                 st.write(f"**TF-IDF Match Score:** {result['TF-IDF Match (%)']}%")
                 st.write(f"**Semantic Similarity Score:** {result['Semantic Similarity (%)']}%")
                 st.write(f"**Keyword Coverage Score:** {result['Keyword Coverage (%)']}%")
-                st.write(f"**Fit Score:** {result['Fit Score (%)']}%")
                 st.write("**Missing Keywords:**")
                 st.write(result['Missing Keywords'] if result['Missing Keywords'] else "None ✅")
-
-        # 🏆 Ranked Candidates by Fit Score
-        df_ranked = df.sort_values(by="Fit Score (%)", ascending=False).reset_index(drop=True)
-        df_ranked.index += 1
-        df_ranked.index.name = "Rank"
-
-        st.subheader("🏆 Ranked Candidates by Fit Score")
-        st.dataframe(df_ranked)
-
-        csv = df.to_csv(index=False).encode("utf-8")
-        st.download_button("📥 Download Results as CSV", data=csv, file_name="resume_analysis_results.csv", mime="text/csv")

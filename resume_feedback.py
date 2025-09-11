@@ -4,7 +4,6 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-print("Loaded Gemini API Key:", os.getenv("GEMINI_API_KEY"))
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 
@@ -21,18 +20,7 @@ Your task is to analyze the following resume against the provided job descriptio
 {resume_text}
 
 ## Instructions:
-1. Evaluate the resume for ATS compatibility.
-2. Identify missing keywords from the job description.
-3. Check for formatting issues.
-4. Provide a score out of 100.
-5. Suggest improvements.
-
-## Output Format:
-### ATS Compatibility Report
-- ATS Score:
-- Keyword Match Score:
-- Missing Keywords:
-- Formatting Issues:
+1. Suggest improvements.
 
 ### Suggestions for Improvement
 - 

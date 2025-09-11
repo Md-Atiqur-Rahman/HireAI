@@ -1,4 +1,5 @@
-from pyresparser import ResumeParser
+from ats_score import calculate_ats_score
+from resume_feedback import generate_resume_feedback_gemini
 import streamlit as st
 import pandas as pd
 import pdfplumber
@@ -9,6 +10,12 @@ from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sentence_transformers import SentenceTransformer, util
 import plotly.express as px
+import spacy
+nlp = spacy.load("en_core_web_sm")
+import re
+from dateutil import parser
+from datetime import datetime
+
 
 # Download NLTK data
 nltk.download('punkt')
@@ -52,14 +59,10 @@ rank_placeholder = st.empty()
 resume_analysis_container = st.container()
 
 # Helper functions
-def extract_text_from_pdf(file):
-    text = ""
-    with pdfplumber.open(file) as pdf:
-        for page in pdf.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
-    return text
+def extract_text_from_pdf(file_path):
+    with pdfplumber.open(file_path) as pdf:
+        return "\n".join([page.extract_text() for page in pdf.pages if page.extract_text()])
+
 
 def extract_keywords(text):
     tokens = word_tokenize(text.lower())
@@ -73,9 +76,6 @@ def extract_phone(text):
     match = re.search(r"(\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}", text)
     return match.group(0) if match else "Not found"
 
-def extract_experience(text):
-    match = re.search(r"(\d+)\s+(?:years|yrs)\s+(?:of\s+)?experience", text, re.IGNORECASE)
-    return f"{match.group(1)} years" if match else "Not found"
 
 def calculate_semantic_similarity(text1, text2):
     model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -84,15 +84,71 @@ def calculate_semantic_similarity(text1, text2):
     similarity_score = util.pytorch_cos_sim(embedding1, embedding2)
     return float(similarity_score[0][0]) * 100
 
-def extract_structured_experience(file_path):
-    data = ResumeParser(file_path).get_extracted_data()
-    print("🔍 Raw ResumeParser Output:", data)
+def extract_entities(text):
+    doc = nlp(text)
+    name = ""
+    organizations = set()
+    designations = set()
+
+    for ent in doc.ents:
+        if ent.label_ == "PERSON" and not name:
+            name = ent.text
+        elif ent.label_ == "ORG":
+            organizations.add(ent.text)
+
+    designation_matches = re.findall(r"\b(Developer|Engineer|Manager|Intern|Analyst|Consultant|Creator)\b", text, re.IGNORECASE)
+    designations.update(designation_matches)
 
     return {
-        "Designation": data.get("designation", []),
-        "Company Names": data.get("company_names", []),
-        "Total Experience": data.get("total_experience", "Not found")
+        "Name": name,
+        "Organizations": list(organizations),
+        "Designations": list(designations)
     }
+
+
+
+def extract_experience_duration(text):
+    date_ranges = re.findall(r"\[(\d{2}/\d{4})\]\s*-\s*\[(\d{2}/\d{4}|Present)\]", text)
+    total_months = 0
+    for start, end in date_ranges:
+        try:
+            start_date = parser.parse(start)
+            end_date = datetime.now() if end.lower() == "present" else parser.parse(end)
+            total_months += max((end_date.year - start_date.year) * 12 + (end_date.month - start_date.month), 0)
+        except:
+            continue
+    return f"{round(total_months / 12, 2)} years" if total_months else "Not found"
+
+
+def extract_skills_tfidf(resume_text, jd_text, top_n=10):
+    documents = [jd_text, resume_text]
+    vectorizer = TfidfVectorizer(stop_words='english')
+    tfidf_matrix = vectorizer.fit_transform(documents)
+    feature_names = vectorizer.get_feature_names_out()
+    resume_scores = tfidf_matrix[1].toarray()[0]
+    top_indices = resume_scores.argsort()[::-1][:top_n]
+    return [feature_names[i] for i in top_indices if resume_scores[i] > 0]
+
+
+def clean_list(items):
+    return list(set([item.strip().title() for item in items if len(item) > 2]))
+
+
+# 🔹Designations & Organizations
+def clean_list(items):
+    return list(set([item.strip().title() for item in items if len(item) > 2]))
+
+def filter_organizations(orgs, text):
+    filtered = []
+    for org in orgs:
+        if re.search(rf"\b{re.escape(org)}\b", text, re.IGNORECASE):
+            # Check if org appears near keywords like 'worked at', 'interned at', etc.
+            context = re.search(rf".{{0,50}}{re.escape(org)}.{{0,50}}", text, re.IGNORECASE)
+            if context and any(kw in context.group().lower() for kw in ["intern", "worked", "developer", "engineer", "creator"]):
+                filtered.append(org)
+    return filtered
+
+
 
 
 
@@ -113,8 +169,9 @@ if st.session_state.analyze_triggered and not st.session_state.analysis_done:
         resume_keywords = extract_keywords(resume_text)
         email = extract_email(resume_text)
         phone = extract_phone(resume_text)
-        experience = extract_experience(resume_text)
-        structured_exp = extract_structured_experience(resume_file)
+        experience = extract_experience_duration(resume_text)
+        orgInfo =extract_entities(resume_text)
+        skills = extract_skills_tfidf(resume_text,st.session_state.jd_text)
         documents = [st.session_state.jd_text, resume_text]
         vectorizer = TfidfVectorizer(stop_words='english')
         tfidf_matrix = vectorizer.fit_transform(documents)
@@ -130,19 +187,26 @@ if st.session_state.analyze_triggered and not st.session_state.analysis_done:
         missing_keywords = [word for i, word in enumerate(feature_names) if jd_scores[i] > 0.1 and resume_scores[i] == 0]
         generic_terms = {"also", "us", "x", "join", "apply", "offer", "required", "preferred", "related", "within", "looking", "invite"}
         missing_keywords = [kw for kw in missing_keywords if kw not in generic_terms]
+        orgs_raw = orgInfo.get("Organizations", [])
+        orgs_filtered = filter_organizations(orgs_raw, resume_text)
+        ats_result = calculate_ats_score(resume_text, st.session_state.jd_text)
+        feedback = generate_resume_feedback_gemini(resume_text, st.session_state.jd_text)
+        # result["Feedback"] = feedback
 
         result = {
-            "Candidate": resume_file.name,
+            "Candidate": orgInfo["Name"],
             "Email": email,
             "Contact": phone,
+            "Organizations":orgs_filtered,
+            "Designations": orgInfo.get("Designations", []),
             "Experience": experience,
+            "ATS Score": ats_result["ATS Score"],
             "TF-IDF Match (%)": round(tfidf_match_score, 2),
             "Semantic Similarity (%)": round(semantic_similarity_score, 2),
             "Keyword Coverage (%)": round(keyword_coverage_score, 2),
             "Fit Score (%)": round(fit_score, 2),
             "Missing Keywords": ", ".join(missing_keywords),
-            "Experience": structured_exp.get("Total Experience", "Not found"),
-            "Experience Details": structured_exp
+            "Skills": skills,
         }
 
         st.session_state.results.append(result)
@@ -192,17 +256,23 @@ if st.session_state.analysis_done and st.session_state.results:
     with resume_analysis_container.container():
         for result in st.session_state.results:
             st.subheader(f"📄 Analysis for {result['Candidate']}")
-            st.metric("Fit Score (%)", result["Fit Score (%)"])
+            st.metric("ATS Score (%)", ats_result["ATS Score"])
 
             with st.expander("📋 Detailed Analysis"):
                 st.write(f"**Email Address:** {result['Email']}")
                 st.write(f"**Contact Number:** {result['Contact']}")
-                designations = result['Experience Details'].get('Designation', [])
-                companies = result['Experience Details'].get('Company Names', [])
+                st.write("**Organizations:**", ", ".join(orgInfo.get("Organizations", [])))
+                st.write("**Designations:**", ", ".join(orgInfo.get("Designations", [])))
 
-                st.write("**Total Experience:**", result['Experience Details'].get('Total Experience', 'Not found'))
-                st.write("**Designations:**", ", ".join(designations) if isinstance(designations, list) else designations)
-                st.write("**Companies:**", ", ".join(companies) if isinstance(companies, list) else companies)
+                st.write(f"**Experience:** {result['Experience']}")
+                st.write("**Skills:**", ", ".join(result.get("Skills", [])))
+                
+                st.metric("ATS Score", ats_result["ATS Score"])
+                st.write("**Keyword Match Score (%):**", ats_result["Keyword Match Score (%)"])
+                st.write("**Matched Keywords:**", ", ".join(ats_result["Matched Keywords"]))
+                st.write("**Missing Keywords:**", ", ".join(ats_result["Missing Keywords"]))
+                st.write("**Formatting Deductions:**", ats_result["Formatting Deductions"])
+
 
                 st.write(f"**Fit Score (%):** {result["Fit Score (%)"]}")
                 st.write(f"**TF-IDF Match Score:** {result['TF-IDF Match (%)']}%")
@@ -210,3 +280,6 @@ if st.session_state.analysis_done and st.session_state.results:
                 st.write(f"**Keyword Coverage Score:** {result['Keyword Coverage (%)']}%")
                 st.write("**Missing Keywords:**")
                 st.write(result['Missing Keywords'] if result['Missing Keywords'] else "None ✅")
+                
+                st.write("🧠 **LLM-Powered Feedback:**")
+                st.write(feedback)

@@ -1,0 +1,1 @@
+We are hiring a Python developer with experience in Django, Flask, REST APIs, Docker, Kubernetes, and AWS. The ideal candidate should be proficient in JavaScript and React, and have a strong understanding of cloud deployment and frontend technologies.

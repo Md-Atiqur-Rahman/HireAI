@@ -190,7 +190,7 @@ if st.session_state.analyze_triggered and not st.session_state.analysis_done:
         orgs_raw = orgInfo.get("Organizations", [])
         orgs_filtered = filter_organizations(orgs_raw, resume_text)
         ats_result = calculate_ats_score(resume_text, st.session_state.jd_text)
-        feedback = generate_resume_feedback_gemini(resume_text, st.session_state.jd_text)
+        # feedback = generate_resume_feedback_gemini(resume_text, st.session_state.jd_text)
         # result["Feedback"] = feedback
 
         result = {
@@ -201,6 +201,11 @@ if st.session_state.analyze_triggered and not st.session_state.analysis_done:
             "Designations": orgInfo.get("Designations", []),
             "Experience": experience,
             "ATS Score": ats_result["ATS Score"],
+            "Keyword Match Score (%)":ats_result["Keyword Match Score (%)"],
+            "Matched Keywords":ats_result["Matched Keywords"],
+            "Missing Keywords":ats_result["Missing Keywords"],
+            "Formatting Deductions":ats_result["Formatting Deductions"],
+
             "TF-IDF Match (%)": round(tfidf_match_score, 2),
             "Semantic Similarity (%)": round(semantic_similarity_score, 2),
             "Keyword Coverage (%)": round(keyword_coverage_score, 2),
@@ -256,22 +261,23 @@ if st.session_state.analysis_done and st.session_state.results:
     with resume_analysis_container.container():
         for result in st.session_state.results:
             st.subheader(f"📄 Analysis for {result['Candidate']}")
-            st.metric("ATS Score (%)", ats_result["ATS Score"])
+            st.metric("ATS Score (%)", result["ATS Score"])
 
             with st.expander("📋 Detailed Analysis"):
                 st.write(f"**Email Address:** {result['Email']}")
                 st.write(f"**Contact Number:** {result['Contact']}")
-                st.write("**Organizations:**", ", ".join(orgInfo.get("Organizations", [])))
-                st.write("**Designations:**", ", ".join(orgInfo.get("Designations", [])))
+
+                st.write("**Organizations:**", ", ".join(result["Organizations"]))
+                st.write("**Designations:**", ", ".join(result["Designations"]))
 
                 st.write(f"**Experience:** {result['Experience']}")
                 st.write("**Skills:**", ", ".join(result.get("Skills", [])))
                 
-                st.metric("ATS Score", ats_result["ATS Score"])
-                st.write("**Keyword Match Score (%):**", ats_result["Keyword Match Score (%)"])
-                st.write("**Matched Keywords:**", ", ".join(ats_result["Matched Keywords"]))
-                st.write("**Missing Keywords:**", ", ".join(ats_result["Missing Keywords"]))
-                st.write("**Formatting Deductions:**", ats_result["Formatting Deductions"])
+                st.metric("ATS Score", result["ATS Score"])
+                st.write("**Keyword Match Score (%):**", result["Keyword Match Score (%)"])
+                st.write("**Matched Keywords:**", ", ".join(result["Matched Keywords"]))
+                st.write("**Missing Keywords:**", result["Missing Keywords"])
+                st.write("**Formatting Deductions:**", result["Formatting Deductions"])
 
 
                 st.write(f"**Fit Score (%):** {result["Fit Score (%)"]}")
@@ -281,5 +287,5 @@ if st.session_state.analysis_done and st.session_state.results:
                 st.write("**Missing Keywords:**")
                 st.write(result['Missing Keywords'] if result['Missing Keywords'] else "None ✅")
                 
-                st.write("🧠 **LLM-Powered Feedback:**")
-                st.write(feedback)
+                # st.write("🧠 **LLM-Powered Feedback:**")
+                # st.write(feedback)

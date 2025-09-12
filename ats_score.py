@@ -55,5 +55,10 @@ def calculate_ats_score(resume_text, jd_text):
         "Keyword Match Score (%)": keyword_match_score,
         "Matched Keywords": matched_keywords,
         "Missing Keywords": missing_keywords,
-        "Formatting Deductions": deductions
+        "Formatting Deductions": deductions,
+        "Raw TF-IDF Scores": {
+            "JD": jd_scores.tolist(),
+            "Resume": resume_scores.tolist()
+        }
     }
+

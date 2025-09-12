@@ -1,20 +1,18 @@
-from ats_score import calculate_ats_score
-from resume_feedback import generate_resume_feedback_gemini
+from src.Helper.ats_score import calculate_ats_score
+from src.Helper.resume_feedback import generate_resume_feedback_gemini
 import streamlit as st
 import pandas as pd
-import pdfplumber
-import re
 import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
+
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sentence_transformers import SentenceTransformer, util
 import plotly.express as px
-import spacy
-nlp = spacy.load("en_core_web_sm")
-import re
-from dateutil import parser
-from datetime import datetime
+
+from src.Helper.extract_experience_details import extract_experience_entries
+from src.Helper.extract_general_info import extract_email, extract_entities, extract_phone, filter_organizations
+from src.Helper.extract_skills import extract_skills_tfidf
+from src.Helper.semantic_similarity import calculate_semantic_similarity
+from src.Helper.extractor import extract_keywords
+from src.Helper.parser import extract_text_from_pdf
 
 
 # Download NLTK data
@@ -58,110 +56,6 @@ chart_placeholder = st.empty()
 rank_placeholder = st.empty()
 resume_analysis_container = st.container()
 
-# Helper functions
-def extract_text_from_pdf(file_path):
-    with pdfplumber.open(file_path) as pdf:
-        return "\n".join([page.extract_text() for page in pdf.pages if page.extract_text()])
-
-
-def extract_keywords(text):
-    tokens = word_tokenize(text.lower())
-    return [word for word in tokens if word.isalpha() and word not in stopwords.words('english')]
-
-def extract_email(text):
-    match = re.search(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", text)
-    return match.group(0) if match else "Not found"
-
-def extract_phone(text):
-    match = re.search(r"(\+?\d{1,3}[-.\s]?)?\(?\d{2,4}\)?[-.\s]?\d{3,4}[-.\s]?\d{3,4}", text)
-    return match.group(0) if match else "Not found"
-
-
-def calculate_semantic_similarity(text1, text2):
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-    embedding1 = model.encode(text1, convert_to_tensor=True)
-    embedding2 = model.encode(text2, convert_to_tensor=True)
-    similarity_score = util.pytorch_cos_sim(embedding1, embedding2)
-    return float(similarity_score[0][0]) * 100
-
-def extract_entities(text):
-    doc = nlp(text)
-    name = ""
-    organizations = set()
-    designations = set()
-
-    for ent in doc.ents:
-        if ent.label_ == "PERSON" and not name:
-            # Clean up the name
-            raw_name = ent.text.strip()
-            cleaned_name = re.split(r"[\n:]", raw_name)[0].strip()
-            cleaned_name = re.sub(r"\bEmail\b", "", cleaned_name, flags=re.IGNORECASE).strip()
-            name = cleaned_name
-        elif ent.label_ == "ORG":
-            organizations.add(ent.text)
-
-    designation_matches = re.findall(r"\b(Developer|Engineer|Manager|Intern|Analyst|Consultant|Creator)\b", text, re.IGNORECASE)
-    designations.update(designation_matches)
-
-    return {
-        "Name": name,
-        "Organizations": list(organizations),
-        "Designations": list(designations)
-    }
-
-def extract_date_ranges(text):
-    # Use regex to find date ranges
-    pattern = r"(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s\d{4}|\\d{2}/\\d{4})\\s*(?:–|-|to)\\s*(?:Present|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\s\\d{4}|\\d{2}/\\d{4})"
-    return re.findall(pattern, text)
-
-
-def extract_experience_duration(text):
-    date_ranges = re.findall(r"\[(\d{2}/\d{4})\]\s*-\s*\[(\d{2}/\d{4}|Present)\]", text)
-    if not date_ranges:
-        return "Not found"
-
-    # Use only the last job entry
-    start, end = date_ranges[-1]
-    try:
-        start_date = parser.parse(start)
-        end_date = datetime.now() if end.lower() == "present" else parser.parse(end)
-        total_months = max((end_date.year - start_date.year) * 12 + (end_date.month - start_date.month), 0)
-        return f"{round(total_months / 12, 2)} years"
-    except:
-        return "Not found"
-
-
-
-def extract_skills_tfidf(resume_text, jd_text, top_n=10):
-    documents = [jd_text, resume_text]
-    vectorizer = TfidfVectorizer(stop_words='english')
-    tfidf_matrix = vectorizer.fit_transform(documents)
-    feature_names = vectorizer.get_feature_names_out()
-    resume_scores = tfidf_matrix[1].toarray()[0]
-    top_indices = resume_scores.argsort()[::-1][:top_n]
-    return [feature_names[i] for i in top_indices if resume_scores[i] > 0]
-
-
-def clean_list(items):
-    return list(set([item.strip().title() for item in items if len(item) > 2]))
-
-
-# 🔹Designations & Organizations
-def clean_list(items):
-    return list(set([item.strip().title() for item in items if len(item) > 2]))
-
-def filter_organizations(orgs, text):
-    filtered = []
-    for org in orgs:
-        if re.search(rf"\b{re.escape(org)}\b", text, re.IGNORECASE):
-            # Check if org appears near keywords like 'worked at', 'interned at', etc.
-            context = re.search(rf".{{0,50}}{re.escape(org)}.{{0,50}}", text, re.IGNORECASE)
-            if context and any(kw in context.group().lower() for kw in ["intern", "worked", "developer", "engineer", "creator"]):
-                filtered.append(org)
-    return filtered
-
-
-
 
 
 # ✅ Run analysis only when triggered
@@ -181,7 +75,8 @@ if st.session_state.analyze_triggered and not st.session_state.analysis_done:
         resume_keywords = extract_keywords(resume_text)
         email = extract_email(resume_text)
         phone = extract_phone(resume_text)
-        experience = extract_experience_duration(resume_text)
+        #experience = extract_experience_duration(resume_text)
+        experience_details, experience  = extract_experience_entries(resume_text)
         orgInfo =extract_entities(resume_text)
         skills = extract_skills_tfidf(resume_text,st.session_state.jd_text)
         documents = [st.session_state.jd_text, resume_text]
@@ -212,6 +107,7 @@ if st.session_state.analyze_triggered and not st.session_state.analysis_done:
             "Organizations":orgs_filtered,
             "Designations": orgInfo.get("Designations", []),
             "Experience": experience,
+            "ExperienceDetails": experience_details,
             "ATS Score": ats_result["ATS Score"],
             "Keyword Match Score (%)":ats_result["Keyword Match Score (%)"],
             "Matched Keywords":ats_result["Matched Keywords"],
@@ -334,6 +230,10 @@ if st.session_state.analysis_done and st.session_state.results:
                 st.write(f"**Email Address:** {candidate.get('Email', 'Not found')}")
                 st.write(f"**Contact Number:** {candidate.get('Contact', 'Not found')}")
                 st.write(f"**Experience:** {candidate.get('Experience', 'Not found')}")
+                experience_details = candidate.get("ExperienceDetails")
+                for entry in experience_details:
+                    st.write(entry)
+                
                 st.write("**Skills:**", ", ".join(candidate.get("Skills", [])))
                 st.write("**Matched Keywords:**", ", ".join(candidate.get("Matched Keywords", [])))
                 st.write("**Missing Keywords:**", candidate.get("Missing Keywords", "None"))

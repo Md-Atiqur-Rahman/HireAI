@@ -1,8 +1,8 @@
 from pyresparser import ResumeParser
 from experience import calculate_total_experience
-from src.parser import extract_text_from_pdf
-from src.extractor import extract_keywords
-from src.scorer import calculate_similarity
+from src.Helper.parser import extract_text_from_pdf
+from src.Helper.extractor import extract_keywords
+from src.Helper.scorer import calculate_similarity
 import re
 from dateutil import parser
 from datetime import datetime

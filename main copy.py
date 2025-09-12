@@ -1,6 +1,5 @@
 from pyresparser import ResumeParser
 from experience import calculate_total_experience
-from experience_details import extract_experience_details
 from src.parser import extract_text_from_pdf
 from src.extractor import extract_keywords
 from src.scorer import calculate_similarity
@@ -35,29 +34,18 @@ def calculate_total_experience(text):
 
 
 # Load resume
-# resume_path = "E:/Thesis/resume-analyzer/resumes/John Doe.pdf"
+resume_path = "E:/Thesis/resume-analyzer/resumes/Kumaresan-resume.pdf"
 
-# # Step 1: Extract structured data using pyresparser
-# data = extract_with_pyresparser(resume_path)
+# Step 1: Extract structured data using pyresparser
+data = extract_with_pyresparser(resume_path)
 
-# # Step 2: Extract raw text for custom experience calculation
-# resume_text = extract_text_from_pdf(resume_path)  # This should return plain text
+# Step 2: Extract raw text for custom experience calculation
+resume_text = extract_text_from_pdf(resume_path)  # This should return plain text
 
-# # Step 3: Calculate experience using regex-based extractor
-# exp = calculate_total_experience(resume_text)
+# Step 3: Calculate experience using regex-based extractor
+exp = calculate_total_experience(resume_text)
 
-# # Step 4: Use pyresparser experience if available, else fallback to custom
-# final_experience = data.get('experience') if data.get('experience') else exp
+# Step 4: Use pyresparser experience if available, else fallback to custom
+final_experience = data.get('experience') if data.get('experience') else exp
 
-
-# Example usage
-pdf_path = "E:/Thesis/resume-analyzer/resumes/John Doe.pdf"
-pdf_path = "E:/Thesis/resume-analyzer/resumes/Kumaresan-resume.pdf"
-details, total_years = extract_experience_details(pdf_path)
-
-print("Detailed Work Experience:")
-for d in details:
-    print(d)
-print(f"\nTotal Experience = {total_years} Years")
-
-
+print(f"Total Experience: {final_experience} years")

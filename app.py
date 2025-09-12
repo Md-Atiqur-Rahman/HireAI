@@ -15,6 +15,7 @@ nlp = spacy.load("en_core_web_sm")
 import re
 from dateutil import parser
 from datetime import datetime
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 
 # Download NLTK data
@@ -236,6 +237,11 @@ if st.session_state.analyze_triggered and not st.session_state.analysis_done:
 
 # ✅ Re-render everything if analysis is done
 if st.session_state.analysis_done and st.session_state.results:
+    
+    # Initialize session state for selected candidate
+    if "selected_candidate" not in st.session_state:
+        st.session_state.selected_candidate = None
+
     df_final = pd.DataFrame(st.session_state.results).sort_values(by="Fit Score (%)", ascending=False).reset_index(drop=True)
     df_final.index += 1
     df_final.index.name = "Rank"
@@ -247,7 +253,17 @@ if st.session_state.analysis_done and st.session_state.results:
 
     with rank_placeholder.container():
         st.subheader("🏆 Ranked Candidates by Fit Score")
-        st.dataframe(df_final)
+        
+        st.markdown("**Rank | Candidate | ATS Score | Action**")
+        for i, row in df_final.iterrows():
+            cols = st.columns([1, 4, 2, 1])
+            cols[0].markdown(f"{i}")
+            cols[1].markdown(f"{row['Candidate']}")
+            cols[2].markdown(f"{row['ATS Score']}%")
+            if cols[3].button("Details", key=f"details_btn_{i}"):
+                st.session_state.selected_candidate = row
+
+
 
         csv = df_final.to_csv(index=False).encode("utf-8")
         st.download_button(
@@ -258,34 +274,30 @@ if st.session_state.analysis_done and st.session_state.results:
             key="download_rank_table"
         )
 
-    with resume_analysis_container.container():
-        for result in st.session_state.results:
-            st.subheader(f"📄 Analysis for {result['Candidate']}")
-            st.metric("ATS Score (%)", result["ATS Score"])
+ # 📄 Detailed Section (Toggleable)
+    if st.session_state.selected_candidate is not None:
+        candidate = st.session_state.selected_candidate
+        with resume_analysis_container.container():
+            st.subheader(f"📄 Analysis for {candidate['Candidate']}")
+            st.metric("ATS Score (%)", candidate["ATS Score"])
 
-            with st.expander("📋 Detailed Analysis"):
-                st.write(f"**Email Address:** {result['Email']}")
-                st.write(f"**Contact Number:** {result['Contact']}")
+            with st.expander("📋 Detailed Analysis", expanded=True):
+                st.write(f"**Email Address:** {candidate['Email']}")
+                st.write(f"**Contact Number:** {candidate['Contact']}")
+                st.write("**Organizations:**", ", ".join(candidate.get("Organizations", [])))
+                st.write("**Designations:**", ", ".join(candidate.get("Designations", [])))
+                st.write(f"**Experience:** {candidate['Experience']}")
+                st.write("**Skills:**", ", ".join(candidate.get("Skills", [])))
 
-                st.write("**Organizations:**", ", ".join(result["Organizations"]))
-                st.write("**Designations:**", ", ".join(result["Designations"]))
+                st.write("**Keyword Match Score (%):**", candidate["Keyword Match Score (%)"])
+                st.write("**Matched Keywords:**", ", ".join(candidate["Matched Keywords"]))
+                st.write("**Missing Keywords:**", candidate["Missing Keywords"])
+                st.write("**Formatting Deductions:**", candidate["Formatting Deductions"])
 
-                st.write(f"**Experience:** {result['Experience']}")
-                st.write("**Skills:**", ", ".join(result.get("Skills", [])))
-                
-                st.metric("ATS Score", result["ATS Score"])
-                st.write("**Keyword Match Score (%):**", result["Keyword Match Score (%)"])
-                st.write("**Matched Keywords:**", ", ".join(result["Matched Keywords"]))
-                st.write("**Missing Keywords:**", result["Missing Keywords"])
-                st.write("**Formatting Deductions:**", result["Formatting Deductions"])
+                st.write(f"**Fit Score (%):** {candidate['Fit Score (%)']}")
+                st.write(f"**TF-IDF Match Score:** {candidate['TF-IDF Match (%)']}%")
+                st.write(f"**Semantic Similarity Score:** {candidate['Semantic Similarity (%)']}%")
+                st.write(f"**Keyword Coverage Score:** {candidate['Keyword Coverage (%)']}%")
 
-
-                st.write(f"**Fit Score (%):** {result["Fit Score (%)"]}")
-                st.write(f"**TF-IDF Match Score:** {result['TF-IDF Match (%)']}%")
-                st.write(f"**Semantic Similarity Score:** {result['Semantic Similarity (%)']}%")
-                st.write(f"**Keyword Coverage Score:** {result['Keyword Coverage (%)']}%")
-                st.write("**Missing Keywords:**")
-                st.write(result['Missing Keywords'] if result['Missing Keywords'] else "None ✅")
-                
-                # st.write("🧠 **LLM-Powered Feedback:**")
-                # st.write(feedback)
+            if st.button("❌ Close Details"):
+                st.session_state.selected_candidate = None

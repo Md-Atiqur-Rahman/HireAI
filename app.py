@@ -15,7 +15,6 @@ nlp = spacy.load("en_core_web_sm")
 import re
 from dateutil import parser
 from datetime import datetime
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 
 # Download NLTK data
@@ -93,7 +92,11 @@ def extract_entities(text):
 
     for ent in doc.ents:
         if ent.label_ == "PERSON" and not name:
-            name = ent.text
+            # Clean up the name
+            raw_name = ent.text.strip()
+            cleaned_name = re.split(r"[\n:]", raw_name)[0].strip()
+            cleaned_name = re.sub(r"\bEmail\b", "", cleaned_name, flags=re.IGNORECASE).strip()
+            name = cleaned_name
         elif ent.label_ == "ORG":
             organizations.add(ent.text)
 
@@ -106,19 +109,27 @@ def extract_entities(text):
         "Designations": list(designations)
     }
 
+def extract_date_ranges(text):
+    # Use regex to find date ranges
+    pattern = r"(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s\d{4}|\\d{2}/\\d{4})\\s*(?:–|-|to)\\s*(?:Present|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\\s\\d{4}|\\d{2}/\\d{4})"
+    return re.findall(pattern, text)
 
 
 def extract_experience_duration(text):
     date_ranges = re.findall(r"\[(\d{2}/\d{4})\]\s*-\s*\[(\d{2}/\d{4}|Present)\]", text)
-    total_months = 0
-    for start, end in date_ranges:
-        try:
-            start_date = parser.parse(start)
-            end_date = datetime.now() if end.lower() == "present" else parser.parse(end)
-            total_months += max((end_date.year - start_date.year) * 12 + (end_date.month - start_date.month), 0)
-        except:
-            continue
-    return f"{round(total_months / 12, 2)} years" if total_months else "Not found"
+    if not date_ranges:
+        return "Not found"
+
+    # Use only the last job entry
+    start, end = date_ranges[-1]
+    try:
+        start_date = parser.parse(start)
+        end_date = datetime.now() if end.lower() == "present" else parser.parse(end)
+        total_months = max((end_date.year - start_date.year) * 12 + (end_date.month - start_date.month), 0)
+        return f"{round(total_months / 12, 2)} years"
+    except:
+        return "Not found"
+
 
 
 def extract_skills_tfidf(resume_text, jd_text, top_n=10):
@@ -222,13 +233,37 @@ if st.session_state.analyze_triggered and not st.session_state.analysis_done:
         df_so_far.index.name = "Rank"
 
         with chart_placeholder.container():
-            st.subheader("📊 Fit Score Comparison")
+            st.subheader("📊 ATS Score Comparison")
             fig = px.bar(df_so_far, x="Candidate", y="Fit Score (%)", color="Candidate", title="Fit Score per Candidate")
             st.plotly_chart(fig, key=f"realtime_chart_{idx}")
 
         with rank_placeholder.container():
-            st.subheader("🏆 Ranked Candidates by Fit Score")
-            st.dataframe(df_so_far)
+            st.subheader("🏆 Ranked Candidates by ATS Score")
+            
+            # Table headers
+            header_cols = st.columns([1, 3, 2, 2, 2, 1, 2])
+            header_cols[0].markdown("**Rank**")
+            header_cols[1].markdown("**Candidate**")
+            header_cols[2].markdown("**Email**")
+            header_cols[3].markdown("**Contact**")
+            header_cols[4].markdown("**Experience**")
+            header_cols[5].markdown("**ATS Score**")
+            header_cols[6].markdown("**Action**")
+
+            # Table rows
+            for i, row in df_so_far.iterrows():
+                row_cols = st.columns([1, 3, 2, 2, 2, 1, 2])
+                row_cols[0].markdown(f"{i}")
+                row_cols[1].markdown(row["Candidate"])
+                row_cols[2].markdown(row["Email"])
+                row_cols[3].markdown(row["Contact"])
+                row_cols[4].markdown(row["Experience"])
+                row_cols[5].markdown(row["ATS Score"])
+                unique_id = f"{row['Email']}_{idx}"
+                if row_cols[6].button("Details", key=f"details_btn_live_{unique_id}"):
+                    st.session_state.selected_candidate = row.to_dict()
+
+
 
         progress_bar.progress((idx + 1) / total_resumes)
 
@@ -242,26 +277,40 @@ if st.session_state.analysis_done and st.session_state.results:
     if "selected_candidate" not in st.session_state:
         st.session_state.selected_candidate = None
 
-    df_final = pd.DataFrame(st.session_state.results).sort_values(by="Fit Score (%)", ascending=False).reset_index(drop=True)
+    df_final = pd.DataFrame(st.session_state.results).sort_values(by="ATS Score", ascending=False).reset_index(drop=True)
     df_final.index += 1
     df_final.index.name = "Rank"
 
     with chart_placeholder.container():
         st.subheader("📊 Fit Score Comparison")
-        fig = px.bar(df_final, x="Candidate", y="Fit Score (%)", color="Candidate", title="Fit Score per Candidate")
+        fig = px.bar(df_final, x="Candidate", y="ATS Score", color="Candidate", title="ATS Score per Candidate")
         st.plotly_chart(fig, key="final_chart")
 
     with rank_placeholder.container():
-        st.subheader("🏆 Ranked Candidates by Fit Score")
+        st.subheader("🏆 Ranked Candidates by ATS Score")
         
-        st.markdown("**Rank | Candidate | ATS Score | Action**")
+    # Table headers
+        header_cols = st.columns([1, 3, 2, 2, 2, 1, 2])
+        header_cols[0].markdown("**Rank**")
+        header_cols[1].markdown("**Candidate**")
+        header_cols[2].markdown("**Email**")
+        header_cols[3].markdown("**Contact**")
+        header_cols[4].markdown("**Experience**")
+        header_cols[5].markdown("**ATS Score**")
+        header_cols[6].markdown("**Action**")
+
+        # Table rows
         for i, row in df_final.iterrows():
-            cols = st.columns([1, 4, 2, 1])
-            cols[0].markdown(f"{i}")
-            cols[1].markdown(f"{row['Candidate']}")
-            cols[2].markdown(f"{row['ATS Score']}%")
-            if cols[3].button("Details", key=f"details_btn_{i}"):
-                st.session_state.selected_candidate = row
+            row_cols = st.columns([1, 3, 2, 2, 2, 1, 2])
+            row_cols[0].markdown(f"{i}")
+            row_cols[1].markdown(row["Candidate"])
+            row_cols[2].markdown(row["Email"])
+            row_cols[3].markdown(row["Contact"])
+            row_cols[4].markdown(row["Experience"])
+            row_cols[5].markdown(row["ATS Score"])
+            unique_id = f"{row['Email']}_{i}"
+            if row_cols[6].button("Details", key=f"details_btn_final_{unique_id}"):
+                st.session_state.selected_candidate = row.to_dict()
 
 
 
@@ -278,26 +327,15 @@ if st.session_state.analysis_done and st.session_state.results:
     if st.session_state.selected_candidate is not None:
         candidate = st.session_state.selected_candidate
         with resume_analysis_container.container():
-            st.subheader(f"📄 Analysis for {candidate['Candidate']}")
-            st.metric("ATS Score (%)", candidate["ATS Score"])
-
+            st.subheader(f"📄 Analysis for {candidate.get('Candidate', 'Unknown')}")
             with st.expander("📋 Detailed Analysis", expanded=True):
-                st.write(f"**Email Address:** {candidate['Email']}")
-                st.write(f"**Contact Number:** {candidate['Contact']}")
-                st.write("**Organizations:**", ", ".join(candidate.get("Organizations", [])))
-                st.write("**Designations:**", ", ".join(candidate.get("Designations", [])))
-                st.write(f"**Experience:** {candidate['Experience']}")
+                st.write(f"**ATS Score (%):** {candidate['ATS Score']}")
+                st.write(f"**Name:** {candidate['Candidate']}")
+                st.write(f"**Email Address:** {candidate.get('Email', 'Not found')}")
+                st.write(f"**Contact Number:** {candidate.get('Contact', 'Not found')}")
+                st.write(f"**Experience:** {candidate.get('Experience', 'Not found')}")
                 st.write("**Skills:**", ", ".join(candidate.get("Skills", [])))
-
-                st.write("**Keyword Match Score (%):**", candidate["Keyword Match Score (%)"])
-                st.write("**Matched Keywords:**", ", ".join(candidate["Matched Keywords"]))
-                st.write("**Missing Keywords:**", candidate["Missing Keywords"])
-                st.write("**Formatting Deductions:**", candidate["Formatting Deductions"])
-
-                st.write(f"**Fit Score (%):** {candidate['Fit Score (%)']}")
-                st.write(f"**TF-IDF Match Score:** {candidate['TF-IDF Match (%)']}%")
-                st.write(f"**Semantic Similarity Score:** {candidate['Semantic Similarity (%)']}%")
-                st.write(f"**Keyword Coverage Score:** {candidate['Keyword Coverage (%)']}%")
-
+                st.write("**Matched Keywords:**", ", ".join(candidate.get("Matched Keywords", [])))
+                st.write("**Missing Keywords:**", candidate.get("Missing Keywords", "None"))
             if st.button("❌ Close Details"):
                 st.session_state.selected_candidate = None

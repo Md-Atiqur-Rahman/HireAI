@@ -1,13 +1,4 @@
 from pyresparser import ResumeParser
-from experience import calculate_total_experience
-from src.parser import extract_text_from_pdf
-from src.extractor import extract_keywords
-from src.scorer import calculate_similarity
-import re
-from dateutil import parser
-from datetime import datetime
-
-from pyresparser import ResumeParser
 from dateutil import parser
 from datetime import datetime
 import re
@@ -32,20 +23,3 @@ def calculate_total_experience(text):
                 continue
     return round(total_months / 12, 2)
 
-
-# Load resume
-resume_path = "E:/Thesis/resume-analyzer/resumes/Kumaresan-resume.pdf"
-
-# Step 1: Extract structured data using pyresparser
-data = extract_with_pyresparser(resume_path)
-
-# Step 2: Extract raw text for custom experience calculation
-resume_text = extract_text_from_pdf(resume_path)  # This should return plain text
-
-# Step 3: Calculate experience using regex-based extractor
-exp = calculate_total_experience(resume_text)
-
-# Step 4: Use pyresparser experience if available, else fallback to custom
-final_experience = data.get('experience') if data.get('experience') else exp
-
-print(f"Total Experience: {final_experience} years")

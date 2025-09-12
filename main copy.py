@@ -34,6 +34,9 @@ def calculate_total_experience(text):
 
 
 # Load resume
+pdf_path = "E:/Thesis/resume-analyzer/resumes/Craig Kovatch Kovatch.pdf"
+pdf_path = "E:/Thesis/resume-analyzer/resumes/Kumaresan-resume.pdf"
+pdf_path = "E:/Thesis/resume-analyzer/resumes/John Doe.pdf"
 resume_path = "E:/Thesis/resume-analyzer/resumes/Craig Kovatch Kovatch.pdf"
 # Step 1: Extract structured data using pyresparser
 data = extract_with_pyresparser(resume_path)

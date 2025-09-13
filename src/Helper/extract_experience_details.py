@@ -65,3 +65,40 @@ def extract_experience_entries(text):
             continue
     total_years = round(total_months / 12, 1)
     return experience_entries, total_years
+
+
+# --- Fallback 1: Regex for explicit years in text ---
+def extract_years_from_text(text):
+    patterns = [
+        r"(\d+)\+?\s+years of experience",
+        r"over (\d+)\s+years",
+        r"more than (\d+)\s+years"
+    ]
+    for pat in patterns:
+        match = re.search(pat, text, re.IGNORECASE)
+        if match:
+            return int(match.group(1))
+    return 0
+
+
+# --- Main Checker ---
+def check_experience_requirement(resume_text, requirement="5+ years"):
+    required_years = int(re.search(r"(\d+)", requirement).group(1))
+
+    # Step 1: Try your advanced parser
+    entries, total_years = extract_experience_entries(resume_text)
+    if total_years > 0:
+        return total_years >= required_years, total_years, "method=experience_entries"
+
+    # Step 2: Try regex patterns
+    regex_years = extract_years_from_text(resume_text)
+    if regex_years > 0:
+        return regex_years >= required_years, regex_years, "method=regex_years"
+
+    # Step 3: Fallback → let SBERT similarity decide
+    # (pretend semantic similarity ≥0.75 counts as satisfying requirement)
+    # For real pipeline, plug in SBERT model here
+    sbert_score = 0.72  # placeholder, replace with model.encode()
+    return sbert_score >= 0.75, None, "method=sbert"
+
+

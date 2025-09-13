@@ -124,14 +124,16 @@ if st.session_state.analyze_triggered and not st.session_state.analysis_done:
 
         st.session_state.results.append(result)
 
-        df_so_far = pd.DataFrame(st.session_state.results).sort_values(by="Fit Score (%)", ascending=False).reset_index(drop=True)
+        df_so_far = pd.DataFrame(st.session_state.results).sort_values(by="ATS Score", ascending=False).reset_index(drop=True)
         df_so_far.index += 1
         df_so_far.index.name = "Rank"
 
         with chart_placeholder.container():
             st.subheader("📊 ATS Score Comparison")
-            fig = px.bar(df_so_far, x="Candidate", y="Fit Score (%)", color="Candidate", title="Fit Score per Candidate")
+            fig = px.bar(df_so_far, x="Candidate", y="ATS Score", color="Candidate", title="ATS Score per Candidate")
             st.plotly_chart(fig, key=f"realtime_chart_{idx}")
+            
+            
 
         with rank_placeholder.container():
             st.subheader("🏆 Ranked Candidates by ATS Score")
@@ -225,17 +227,31 @@ if st.session_state.analysis_done and st.session_state.results:
         with resume_analysis_container.container():
             st.subheader(f"📄 Analysis for {candidate.get('Candidate', 'Unknown')}")
             with st.expander("📋 Detailed Analysis", expanded=True):
-                st.write(f"**ATS Score (%):** {candidate['ATS Score']}")
-                st.write(f"**Name:** {candidate['Candidate']}")
-                st.write(f"**Email Address:** {candidate.get('Email', 'Not found')}")
-                st.write(f"**Contact Number:** {candidate.get('Contact', 'Not found')}")
-                st.write(f"**Experience:** {candidate.get('Experience', 'Not found')}")
-                experience_details = candidate.get("ExperienceDetails")
-                for entry in experience_details:
-                    st.write(entry)
+                # st.write(f"**ATS Score (%):** {candidate['ATS Score']}")
+                # st.write(f"**Name:** {candidate['Candidate']}")
+                # st.write(f"**Email Address:** {candidate.get('Email', 'Not found')}")
+                # st.write(f"**Contact Number:** {candidate.get('Contact', 'Not found')}")
+                # st.write(f"**Experience:** {candidate.get('Experience', 'Not found')}")
+                # experience_details = candidate.get("ExperienceDetails")
+                # for entry in experience_details:
+                #     st.write(entry)
                 
-                st.write("**Skills:**", ", ".join(candidate.get("Skills", [])))
-                st.write("**Matched Keywords:**", ", ".join(candidate.get("Matched Keywords", [])))
-                st.write("**Missing Keywords:**", candidate.get("Missing Keywords", "None"))
+                # st.write("**Skills:**", ", ".join(candidate.get("Skills", [])))
+                # st.write("**Matched Keywords:**", ", ".join(candidate.get("Matched Keywords", [])))
+                # Test------------------------
+                # "Keyword Match Score (%)":ats_result["Keyword Match Score (%)"],
+                # "TF-IDF Match (%)": round(tfidf_match_score, 2),
+                # "Semantic Similarity (%)": round(semantic_similarity_score, 2),
+                # "Keyword Coverage (%)": round(keyword_coverage_score, 2),
+                # "Fit Score (%)": round(fit_score, 2),
+# 
+                # "Missing Keywords": ", ".join(missing_keywords),
+                st.write(f"**ATS Keyword Match Score (%):** {candidate['Keyword Match Score (%)']}")
+                st.write(f"**TF-IDF Keyword Match Score (%):** {candidate['TF-IDF Match (%)']}")
+                st.write(f"**Semantic Similarity Keyword Match Score (%):** {candidate['Semantic Similarity (%)']}")
+                st.write(f"**Keyword Coverage Match Score (%):** {candidate['Keyword Coverage (%)']}")
+                st.write(f"**ATS Score (%):** {candidate['ATS Score']}")
+                st.write(f"**Fit Score (%):** {candidate['Fit Score (%)']}")
+                
             if st.button("❌ Close Details"):
                 st.session_state.selected_candidate = None

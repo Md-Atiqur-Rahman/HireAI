@@ -8,7 +8,7 @@ import spacy
 from sentence_transformers import SentenceTransformer, util
 import torch
 
-from src.Helper.extract_experience_details import extract_experience_entries
+from src.Helper.extract_experience_details import extract_experience_entries, extract_years_from_text
 
 # Load models
 nlp = spacy.load("en_core_web_sm")
@@ -37,17 +37,21 @@ def check_requirement(requirement, resume_sentences, resume_keywords,total_years
 
     best_idx = int(torch.argmax(similarities))
     best_score = float(similarities[best_idx])
-    best_match = resume_sentences[best_idx]
+    best_match = resume_sentences[best_idx] if resume_sentences else ""
 
     req_keywords = extract_keywords(requirement)
     matched_keywords = req_keywords.intersection(resume_keywords)
     missing_keywords = req_keywords - matched_keywords
+
     # --- Years of Experience Logic ---
     status = "❌ Missing"
     exp_match = None
     year_pattern = re.search(r"(\d+)\+?\s*years?", requirement.lower())
     if year_pattern:
         required_years = int(year_pattern.group(1))
+        if total_years == 0:
+            total_years = extract_years_from_text(resume_text)
+            print("total_years------------",total_years)
         if total_years >= required_years:
             status = "✅ Match"
             exp_match = f"Requirement: {required_years}+ years, Candidate: {total_years} years"
@@ -99,7 +103,9 @@ resume_text = extract_text_from_pdf( "E:/Thesis/resume-analyzer/resumes/Md Atiqu
 
 
 
-experience_entries, total_years = extract_experience_entries(candidate_resume)
+# experience_entries, total_years = extract_experience_entries(candidate_resume)
+total_years = extract_years_from_text(resume_text)
+print("extract_experience_entries------------",total_years)
 # Split resume into sentences
 resume_sentences = [s.strip() for s in resume_text.split("\n") if s.strip()]
 

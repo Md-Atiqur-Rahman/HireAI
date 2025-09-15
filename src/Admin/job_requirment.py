@@ -1,13 +1,15 @@
 import streamlit as st
 import json
+from src.DB.Scripts.job_category import get_all_categories
 from src.db import get_all_requirements, save_job_requirement, get_requirements_by_category
 
 def job_requirements_page():
     st.title("📝 Job Requirements Management")
 
     # Dropdown for category
-    category = st.selectbox("Select Job Category", ["Software Engineer", "Data Engineer", "AI Specialist", "Custom","Programmer","Test"])
-
+    categories = get_all_categories()
+    # Dropdown for category
+    category = st.selectbox("Select Job Category", categories)
     st.subheader("Add Structured Requirements")
 
     # ---- Experience Section ----

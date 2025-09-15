@@ -29,3 +29,10 @@ def get_all_categories():
     rows = cursor.fetchall()
     conn.close()
     return [r[0] for r in rows]
+
+def delete_job_requirements():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM job_requirements;")
+    conn.commit()
+    conn.close()

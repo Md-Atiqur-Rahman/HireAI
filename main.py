@@ -5,6 +5,7 @@ import spacy
 from sentence_transformers import SentenceTransformer, util
 import torch
 
+from src.DB.Scripts.job_category import delete_job_requirements
 from src.Admin.job_category_page import job_category_page
 from src.Admin.job_requirment import job_requirements_page
 from src.Helper.parser import extract_text_from_pdf
@@ -15,10 +16,6 @@ from src.upload_resume import resume_uploader
 
 init_db()
 import streamlit as st
-
-st.set_page_config(page_title="Resume Analyzer", layout="wide")
-
-st.title("Resume Analyzer Application")
 
 # Sidebar navigation
 from streamlit_option_menu import option_menu
@@ -40,3 +37,5 @@ elif page == "Job Requirements":
     job_requirements_page()
 elif page == "Job Categories":
     job_category_page()
+
+    

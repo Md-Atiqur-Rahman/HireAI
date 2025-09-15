@@ -125,7 +125,8 @@ python -m venv env
 
 ```
 .\env\Scripts\Activate.ps1
-
+    
+streamlit run main.py  
 ```
 
 ✅ **Step 2: Install Required Python Libraries**

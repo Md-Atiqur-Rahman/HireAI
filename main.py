@@ -142,7 +142,7 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
 
     return {
         "requirement": requirement,
-        "status": "✅ Match" if best_score >= 0.6 else "❌ Missing",
+        "status": "✅ Match" if best_score >= 0.5 else "❌ Missing",
         "score": round(best_score, 2),
         "best_sentence": best_sentence,
         "matched_keywords": list(matched),
@@ -164,6 +164,54 @@ def evaluate_resume(resume_text, job_requirements):
     summary = f"Matches {met_count} of the {total_count} required qualifications"
 
     return summary, results
+
+def summarize_results(results):
+    # Assign weights (higher for experience & education, lower for skills)
+    weights = {
+        "experience": 3,
+        "education": 2,
+        "skills": 1
+    }
+
+    total_weight = 0
+    earned_weight = 0
+
+    matched = []
+    missing = []
+
+    for r in results:
+        req = r["requirement"].lower()
+        status = r["status"]
+
+        # Figure out category
+        if "year" in req or "experience" in req:
+            category = "experience"
+        elif "degree" in req or "bachelor" in req or "master" in req:
+            category = "education"
+        else:
+            category = "skills"
+
+        weight = weights[category]
+        total_weight += weight
+
+        if status.startswith("✅"):
+            earned_weight += weight
+            matched.append(r["requirement"])
+        else:
+            missing.append(r["requirement"])
+
+    overall_score = round((earned_weight / total_weight) * 100, 1) if total_weight > 0 else 0
+
+    # Build LinkedIn-style summary with actual newlines
+    lines = [
+        "📊 Summary:",
+        f"✅ Matches {len(matched)} of {len(results)} required qualifications",
+        f"📌 Matches Requirements:\n   ✅ " + "\n   ✅ ".join(matched) if matched else "📌 Strong in: None",
+        f"⚠️ Missing Requirements:\n   ❌ " + "\n   ❌ ".join(missing) if missing else "⚠️ Missing: None",
+        f"🔢 Score: {overall_score}%"
+    ]
+
+    return "\n".join(lines)
 
 
 
@@ -197,12 +245,15 @@ resume_text = extract_text_from_pdf( "E:/Thesis/resume-analyzer/resumes/Md Atiqu
 summary, results = evaluate_resume(candidate_resume, job_requirements)
 
 print(summary)
-for r in results:
-    print(f"\n{r['requirement']}")
-    print(f"   ➤ Status: {r['status']} (score={r.get('score', 0.5)})")
-    if 'experience_check' in r:
-        print(f"   ➤ Experience Check: {r['experience_check']}")
-    print(f"   ➤ Best Resume Match: {r['best_sentence']}")
-    print(f"   ➤ Matched Keywords: {', '.join(r['matched_keywords']) if r['matched_keywords'] else 'None'}")
-    print(f"   ➤ Missing Keywords: {', '.join(r['missing_keywords']) if r['missing_keywords'] else 'None'}")
+# for r in results:
+#     print(f"\n{r['requirement']}")
+#     print(f"   ➤ Status: {r['status']} (score={r.get('score', 0.5)})")
+#     if 'experience_check' in r:
+#         print(f"   ➤ Experience Check: {r['experience_check']}")
+#     print(f"   ➤ Best Resume Match: {r['best_sentence']}")
+#     print(f"   ➤ Matched Keywords: {', '.join(r['matched_keywords']) if r['matched_keywords'] else 'None'}")
+#     print(f"   ➤ Missing Keywords: {', '.join(r['missing_keywords']) if r['missing_keywords'] else 'None'}")
+
+    # print LinkedIn-style summary
+print(summarize_results(results))
 

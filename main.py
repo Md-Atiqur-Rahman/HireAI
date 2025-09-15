@@ -5,7 +5,7 @@ import spacy
 from sentence_transformers import SentenceTransformer, util
 import torch
 
-from src.Admin.job_requirment import job_requirements
+from src.Admin.job_requirment import job_requirements_page
 from src.Helper.parser import extract_text_from_pdf
 
 # In main.py or upload_resume.py
@@ -38,5 +38,5 @@ if page == "Resume Analysis":
     resume_uploader()
 
 elif page == "Job Requirements":
-    job_requirements()
+    job_requirements_page()
 

@@ -244,16 +244,7 @@ resume_text = extract_text_from_pdf( "E:/Thesis/resume-analyzer/resumes/Md Atiqu
 
 summary, results = evaluate_resume(candidate_resume, job_requirements)
 
-print(summary)
-# for r in results:
-#     print(f"\n{r['requirement']}")
-#     print(f"   ➤ Status: {r['status']} (score={r.get('score', 0.5)})")
-#     if 'experience_check' in r:
-#         print(f"   ➤ Experience Check: {r['experience_check']}")
-#     print(f"   ➤ Best Resume Match: {r['best_sentence']}")
-#     print(f"   ➤ Matched Keywords: {', '.join(r['matched_keywords']) if r['matched_keywords'] else 'None'}")
-#     print(f"   ➤ Missing Keywords: {', '.join(r['missing_keywords']) if r['missing_keywords'] else 'None'}")
+# print(summary)
 
-    # print LinkedIn-style summary
-print(summarize_results(results))
+# print(summarize_results(results))
 

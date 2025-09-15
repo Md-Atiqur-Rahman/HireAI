@@ -25,27 +25,50 @@ def init_db():
     conn.commit()
     conn.close()
 
-def save_requirement(category, requirements_list):
-    """requirements_list is a Python list"""
+def save_job_requirement(category, requirements_list):
+    """
+    Save one or more requirements into DB under a category.
+    requirements_list: list of strings
+    """
     conn = get_connection()
     cursor = conn.cursor()
-    req_json = json.dumps(requirements_list)  # Convert list to JSON string
-    cursor.execute("""
-        INSERT OR REPLACE INTO job_requirements (category, requirements)
-        VALUES (?, ?)
-    """, (category, req_json))
+
+    # Store as JSON so we can support multiple requirements in one row
+    requirements_json = json.dumps(requirements_list)
+
+    cursor.execute(
+        "INSERT INTO job_requirements (category, requirements) VALUES (?, ?)",
+        (category, requirements_json)
+    )
+
     conn.commit()
     conn.close()
 
 def get_requirements_by_category(category):
+    """
+    Fetch all requirements for a given category.
+    Returns a flat list of requirement strings.
+    """
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT requirements FROM job_requirements WHERE category=?", (category,))
-    row = cursor.fetchone()
+
+    cursor.execute(
+        "SELECT requirements FROM job_requirements WHERE category=?",
+        (category,)
+    )
+    rows = cursor.fetchall()
     conn.close()
-    if row:
-        return json.loads(row["requirements"])  # Convert JSON back to Python list
-    return []
+
+    # Flatten JSON arrays into a single Python list
+    all_requirements = []
+    for row in rows:
+        try:
+            reqs = json.loads(row[0])
+            all_requirements.extend(reqs)
+        except Exception:
+            all_requirements.append(row[0])
+
+    return all_requirements
 
 def get_categories():
     conn = get_connection()
@@ -54,3 +77,11 @@ def get_categories():
     categories = [row["category"] for row in cursor.fetchall()]
     conn.close()
     return categories
+
+def get_all_requirements():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT category, requirement FROM job_requirements")
+    rows = cursor.fetchall()
+    conn.close()
+    return [{"category": r[0], "requirement": r[1]} for r in rows]

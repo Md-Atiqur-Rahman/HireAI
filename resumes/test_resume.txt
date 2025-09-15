@@ -1,0 +1,9 @@
+Software Engineer with 6 years of experience in C# and SQL.
+Worked on feature development and bug fixing for enterprise projects.
+Familiar with GitHub Actions for CI/CD pipelines.
+Holds a Bachelor's degree in Computer Science.
+Worked with MongoDB and Oracle databases.
+No experience with BigQuery, dbt, or Snowflake.
+No knowledge of Looker/NetSpring tools.
+Practices clean code principles and pair programming occasionally.
+Learning AI concepts but no production experience yet.

@@ -3,7 +3,9 @@ from dateutil import parser
 from datetime import datetime
 import spacy
 from sentence_transformers import SentenceTransformer, util
+import torch
 
+from src.db import get_categories, get_requirements_by_category
 from src.Helper.parser import extract_text_from_pdf
 
 # ===============================
@@ -77,24 +79,39 @@ def extract_keywords(text):
 def check_requirement(requirement, resume_sentences, resume_keywords, resume_text):
     # Handle experience requirement separately
     if "year" in requirement.lower():
-        required_years = int(re.search(r"(\d+)", requirement).group(1))
+        # Detect range "X-Y years"
+        range_match = re.search(r"(\d+)\s*-\s*(\d+)\s*years", requirement, re.IGNORECASE)
+        single_match = re.search(r"(\d+)\+?\s*years", requirement, re.IGNORECASE)
+
+        min_years, max_years = None, None
+        if range_match:
+            min_years, max_years = int(range_match.group(1)), int(range_match.group(2))
+        elif single_match:
+            min_years = int(single_match.group(1))
 
         # Step 1: Try advanced extraction
         _, total_years = extract_experience_entries(resume_text)
 
-        # Step 2: Try regex fallback if advanced extraction fails
+        # Step 2: Fallback regex if advanced extraction fails
         if total_years == 0:
             total_years = extract_years_from_text(resume_text)
 
-        # Step 3: Determine status
-        status = "✅ Match" if total_years >= required_years else "❌ Missing"
-        experience_check = f"Requirement: {required_years}+ years, Candidate: {total_years} years"
+        # Step 3: Check requirement match
+        if min_years is not None and max_years is not None:  
+            status = "✅ Match" if min_years <= total_years <= max_years else "❌ Missing"
+            experience_check = f"Requirement: {min_years}-{max_years} years, Candidate: {total_years} years"
+        elif min_years is not None:  
+            status = "✅ Match" if total_years >= min_years else "❌ Missing"
+            experience_check = f"Requirement: {min_years}+ years, Candidate: {total_years} years"
+        else:
+            status = "❌ Missing"
+            experience_check = f"Requirement unclear, Candidate: {total_years} years"
 
         # Continue with SBERT + keyword analysis for skills part
         req_emb = sbert_model.encode(requirement, convert_to_tensor=True)
         res_embs = sbert_model.encode(resume_sentences, convert_to_tensor=True)
         sims = util.cos_sim(req_emb, res_embs)[0]
-        best_idx = int(sims.argmax())
+        best_idx = int(torch.argmax(sims))
         best_score = float(sims[best_idx])
         best_sentence = resume_sentences[best_idx] if resume_sentences else ""
         req_keywords = extract_keywords(requirement)
@@ -111,11 +128,13 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
             "missing_keywords": list(missing)
         }
 
-    # Generic SBERT similarity check
+    # ==========================
+    # Generic (non-experience) requirement check
+    # ==========================
     req_emb = sbert_model.encode(requirement, convert_to_tensor=True)
     res_embs = sbert_model.encode(resume_sentences, convert_to_tensor=True)
     sims = util.cos_sim(req_emb, res_embs)[0]
-    best_idx = int(sims.argmax())
+    best_idx = int(torch.argmax(sims))
     best_score = float(sims[best_idx])
     best_sentence = resume_sentences[best_idx] if resume_sentences else ""
     req_keywords = extract_keywords(requirement)
@@ -124,7 +143,7 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
 
     return {
         "requirement": requirement,
-        "status": "✅ Match" if best_score >= 0.70 else "❌ Missing",
+        "status": "✅ Match" if best_score >= 0.5 else "❌ Missing",
         "score": round(best_score, 2),
         "best_sentence": best_sentence,
         "matched_keywords": list(matched),
@@ -147,11 +166,59 @@ def evaluate_resume(resume_text, job_requirements):
 
     return summary, results
 
+def summarize_results(results):
+    # Assign weights (higher for experience & education, lower for skills)
+    weights = {
+        "experience": 3,
+        "education": 2,
+        "skills": 1
+    }
+
+    total_weight = 0
+    earned_weight = 0
+
+    matched = []
+    missing = []
+
+    for r in results:
+        req = r["requirement"].lower()
+        status = r["status"]
+
+        # Figure out category
+        if "year" in req or "experience" in req:
+            category = "experience"
+        elif "degree" in req or "bachelor" in req or "master" in req:
+            category = "education"
+        else:
+            category = "skills"
+
+        weight = weights[category]
+        total_weight += weight
+
+        if status.startswith("✅"):
+            earned_weight += weight
+            matched.append(r["requirement"])
+        else:
+            missing.append(r["requirement"])
+
+    overall_score = round((earned_weight / total_weight) * 100, 1) if total_weight > 0 else 0
+
+    # Build LinkedIn-style summary with actual newlines
+    lines = [
+        "📊 Summary:",
+        f"✅ Matches {len(matched)} of {len(results)} required qualifications",
+        f"📌 Matches Requirements:\n   ✅ " + "\n   ✅ ".join(matched) if matched else "📌 Strong in: None",
+        f"⚠️ Missing Requirements:\n   ❌ " + "\n   ❌ ".join(missing) if missing else "⚠️ Missing: None",
+        f"🔢 Score: {overall_score}%"
+    ]
+
+    return "\n".join(lines)
+
 
 
 # Job Requirements
 job_requirements = [
-    "5+ years of development experience in SQL / C# / Python",
+    "3-5 years of development experience in SQL / C# / Python",
     "Developed and executed medium to large-scale features",
     "Implement automation tools and frameworks (CI/CD pipelines)",
     "Bachelor’s or master’s degree in Computer Science or Engineering",
@@ -175,16 +242,19 @@ Learning AI concepts but no production experience yet.
 """
 # Extract Resume from PDF
 resume_text = extract_text_from_pdf( "E:/Thesis/resume-analyzer/resumes/Md Atiqur Rahman.pdf")
-
+job_requirements = get_requirements_by_category("Backend Developer")
 summary, results = evaluate_resume(candidate_resume, job_requirements)
 
-print(summary)
-for r in results:
-    print(f"\n{r['requirement']}")
-    print(f"   ➤ Status: {r['status']} (score={r.get('score', 0.5)})")
-    if 'experience_check' in r:
-        print(f"   ➤ Experience Check: {r['experience_check']}")
-    print(f"   ➤ Best Resume Match: {r['best_sentence']}")
-    print(f"   ➤ Matched Keywords: {', '.join(r['matched_keywords']) if r['matched_keywords'] else 'None'}")
-    print(f"   ➤ Missing Keywords: {', '.join(r['missing_keywords']) if r['missing_keywords'] else 'None'}")
+# print(summary)
+# for r in results:
+#     print(f"\n{r['requirement']}")
+#     print(f"   ➤ Status: {r['status']} (score={r.get('score', 0.5)})")
+#     if 'experience_check' in r:
+#         print(f"   ➤ Experience Check: {r['experience_check']}")
+#     print(f"   ➤ Best Resume Match: {r['best_sentence']}")
+#     print(f"   ➤ Matched Keywords: {', '.join(r['matched_keywords']) if r['matched_keywords'] else 'None'}")
+#     print(f"   ➤ Missing Keywords: {', '.join(r['missing_keywords']) if r['missing_keywords'] else 'None'}")
+
+    # print LinkedIn-style summary
+print(summarize_results(results))
 

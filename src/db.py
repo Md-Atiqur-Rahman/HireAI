@@ -25,33 +25,27 @@ def init_db():
     conn.commit()
     conn.close()
 
-def save_job_requirement(category, requirements_list):
+def save_job_requirement(category, reqs):
     """
-    Save one or more requirements into DB under a category.
-    requirements_list: list of strings
+    Save a list of requirements for a category.
+    reqs can be a single string or a list of strings.
     """
+    import json
+    if isinstance(reqs, str):
+        reqs = [reqs]
     conn = get_connection()
     cursor = conn.cursor()
-
-    # Store as JSON so we can support multiple requirements in one row
-    requirements_json = json.dumps(requirements_list)
-
     cursor.execute(
         "INSERT INTO job_requirements (category, requirements) VALUES (?, ?)",
-        (category, requirements_json)
+        (category, json.dumps(reqs))  # <- save as JSON array
     )
-
     conn.commit()
     conn.close()
 
+
 def get_requirements_by_category(category):
-    """
-    Fetch all requirements for a given category.
-    Returns a flat list of requirement strings.
-    """
     conn = get_connection()
     cursor = conn.cursor()
-
     cursor.execute(
         "SELECT requirements FROM job_requirements WHERE category=?",
         (category,)
@@ -59,16 +53,19 @@ def get_requirements_by_category(category):
     rows = cursor.fetchall()
     conn.close()
 
-    # Flatten JSON arrays into a single Python list
     all_requirements = []
     for row in rows:
         try:
             reqs = json.loads(row[0])
-            all_requirements.extend(reqs)
+            if isinstance(reqs, list):
+                all_requirements.extend(reqs)
+            else:
+                all_requirements.append(str(reqs))
         except Exception:
-            all_requirements.append(row[0])
+            all_requirements.append(str(row[0]))
 
     return all_requirements
+
 
 def get_categories():
     conn = get_connection()

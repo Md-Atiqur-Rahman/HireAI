@@ -6,23 +6,40 @@ def job_requirements_page():
     st.title("📝 Job Requirements Management")
 
     # Dropdown for category
-    category = st.selectbox("Select Job Category", ["Software Engineer", "Data Engineer", "AI Specialist", "Custom" , "Custom1","Data Science"])
+    category = st.selectbox("Select Job Category", ["Software Engineer", "Data Engineer", "AI Specialist", "Custom","Programmer","Test"])
 
     st.subheader("Add Structured Requirements")
 
     # ---- Experience Section ----
     with st.expander("➕ Add Experience Requirement"):
-        years = st.number_input("Years of Experience", min_value=1, max_value=50, step=1)
-        subject = st.text_input("Technology / Subject (e.g., C#, Python, SQL)")
-        add_exp = st.button("➕ Add Experience Requirement")
-
-        if add_exp:
-            if subject.strip():
-                req_text = f"{years} years of experience in {subject}"
-                save_job_requirement(category, [req_text])   # Save into DB
-                st.success(f"Added: {req_text}")
+            # Input for year(s)
+        years_input = st.text_input("Years of Experience", placeholder="e.g., 3, 3+, 3-5")
+        if 'subjects' not in st.session_state:
+            st.session_state.subjects = []
+        new_subject = st.text_input("Add Technology / Subject", key="subject_input")
+        if st.button("➕ Add Subject"):
+            if new_subject.strip():
+                st.session_state.subjects.append(new_subject.strip())
+                st.success(f"Added subject: {new_subject}")
             else:
-                st.error("⚠️ Please enter at least one subject")
+                st.error("Enter a valid subject")
+
+        # Display current subjects
+        if st.session_state.subjects:
+            st.write("Current subjects:", " / ".join(st.session_state.subjects))
+
+        # Save experience requirement
+        if st.button("Save Experience Requirement"):
+            if not years_input.strip():
+                st.error("Please enter years of experience")
+            elif not st.session_state.subjects:
+                st.error("Please add at least one subject")
+            else:
+                subjects_text = " / ".join(st.session_state.subjects)
+                req_text = f"{category} with {years_input} years of experience in {subjects_text}"
+                save_job_requirement(category, req_text)
+                st.success(f"Saved: {req_text}")
+                st.session_state.subjects = []  # reset subjects after save
 
     # ---- Education Section ----
     with st.expander("➕ Add Education Requirement"):
@@ -61,10 +78,30 @@ def job_requirements_page():
     # ---- Show Existing Requirements ----
     st.subheader(f"📋 Current Requirements for {category}")
     requirements = get_requirements_by_category(category)
-
+    print(requirements)
     if requirements:
         for i, req in enumerate(requirements, 1):
             st.markdown(f"{i}. {req}")
     else:
         st.info("No requirements added yet.")
 
+
+# # Existing requirements
+#     st.subheader("📂 Existing Job Requirement Categories")
+#     existing_reqs = get_all_requirements()  # ✅ fetch everything
+
+#     if existing_reqs:
+#         # Group by category
+#         categories = {}
+#         for row in existing_reqs:
+#             cat = row["category"]
+#             req = row["requirement"]
+#             categories.setdefault(cat, []).append(req)
+
+#         # Show each category with its requirements
+#         for cat, reqs in categories.items():
+#             st.markdown(f"**{cat}**")
+#             for r in reqs:
+#                 st.write(f"- {r}")
+#     else:
+#         st.info("No job requirements saved yet.")

@@ -75,18 +75,18 @@ def check_requirement(requirement, resume_sentences, resume_keywords,total_years
 
 # Job Requirements
 job_requirements = [
-    "5+ years of development experience in SQL / C# / Python",
-    "Developed and executed medium to large-scale features",
+    # "5+ years of development experience in SQL / C# / Python",
+    # "Developed and executed medium to large-scale features",
     "Implement automation tools and frameworks (CI/CD pipelines)",
-    "Bachelor’s or master’s degree in Computer Science or Engineering",
-    "Experience with BigQuery, dbt, Snowflake",
-    "Experience in data visualization/Looker/NetSpring",
-    "Understanding the value of pair programming/TDD/Clean Code",
-    "Exposure/Experience leveraging AI"
+    # "Bachelor’s or master’s degree in Computer Science or Engineering",
+    # "Experience with BigQuery, dbt, Snowflake",
+    # "Experience in data visualization/Looker/NetSpring",
+    # "Understanding the value of pair programming/TDD/Clean Code",
+    # "Exposure/Experience leveraging AI"
 ]
 
 # Candidate Resume
-candidate_resume = """
+resume_text = """
 Software Engineer with 3 years of experience in C# and SQL.
 Worked on feature development and bug fixing for enterprise projects.
 Familiar with GitHub Actions for CI/CD pipelines.
@@ -98,14 +98,14 @@ Practices clean code principles and pair programming occasionally.
 Learning AI concepts but no production experience yet.
 """
 # Extract Resume from PDF
-resume_text = extract_text_from_pdf( "E:/Thesis/resume-analyzer/resumes/Md Atiqur Rahman.pdf")
+# resume_text = extract_text_from_pdf( "E:/Thesis/resume-analyzer/resumes/Md Atiqur Rahman.pdf")
 
 
 
 
-# experience_entries, total_years = extract_experience_entries(candidate_resume)
+experience_entries, total_years = extract_experience_entries(resume_text)
 total_years = extract_years_from_text(resume_text)
-print("extract_experience_entries------------",total_years)
+
 # Split resume into sentences
 resume_sentences = [s.strip() for s in resume_text.split("\n") if s.strip()]
 

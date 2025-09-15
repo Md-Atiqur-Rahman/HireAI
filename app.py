@@ -1,5 +1,5 @@
 from src.Helper.ats_score import calculate_ats_score
-from src.Helper.resume_feedback import generate_resume_feedback_gemini
+# from src.Helper.resume_feedback import generate_resume_feedback_gemini
 import streamlit as st
 import pandas as pd
 import nltk

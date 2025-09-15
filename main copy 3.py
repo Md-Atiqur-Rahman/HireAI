@@ -3,7 +3,6 @@ from dateutil import parser
 from datetime import datetime
 import spacy
 from sentence_transformers import SentenceTransformer, util
-import torch
 
 from src.Helper.parser import extract_text_from_pdf
 
@@ -78,39 +77,24 @@ def extract_keywords(text):
 def check_requirement(requirement, resume_sentences, resume_keywords, resume_text):
     # Handle experience requirement separately
     if "year" in requirement.lower():
-        # Detect range "X-Y years"
-        range_match = re.search(r"(\d+)\s*-\s*(\d+)\s*years", requirement, re.IGNORECASE)
-        single_match = re.search(r"(\d+)\+?\s*years", requirement, re.IGNORECASE)
-
-        min_years, max_years = None, None
-        if range_match:
-            min_years, max_years = int(range_match.group(1)), int(range_match.group(2))
-        elif single_match:
-            min_years = int(single_match.group(1))
+        required_years = int(re.search(r"(\d+)", requirement).group(1))
 
         # Step 1: Try advanced extraction
         _, total_years = extract_experience_entries(resume_text)
 
-        # Step 2: Fallback regex if advanced extraction fails
+        # Step 2: Try regex fallback if advanced extraction fails
         if total_years == 0:
             total_years = extract_years_from_text(resume_text)
 
-        # Step 3: Check requirement match
-        if min_years is not None and max_years is not None:  
-            status = "✅ Match" if min_years <= total_years <= max_years else "❌ Missing"
-            experience_check = f"Requirement: {min_years}-{max_years} years, Candidate: {total_years} years"
-        elif min_years is not None:  
-            status = "✅ Match" if total_years >= min_years else "❌ Missing"
-            experience_check = f"Requirement: {min_years}+ years, Candidate: {total_years} years"
-        else:
-            status = "❌ Missing"
-            experience_check = f"Requirement unclear, Candidate: {total_years} years"
+        # Step 3: Determine status
+        status = "✅ Match" if total_years >= required_years else "❌ Missing"
+        experience_check = f"Requirement: {required_years}+ years, Candidate: {total_years} years"
 
         # Continue with SBERT + keyword analysis for skills part
         req_emb = sbert_model.encode(requirement, convert_to_tensor=True)
         res_embs = sbert_model.encode(resume_sentences, convert_to_tensor=True)
         sims = util.cos_sim(req_emb, res_embs)[0]
-        best_idx = int(torch.argmax(sims))
+        best_idx = int(sims.argmax())
         best_score = float(sims[best_idx])
         best_sentence = resume_sentences[best_idx] if resume_sentences else ""
         req_keywords = extract_keywords(requirement)
@@ -127,13 +111,11 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
             "missing_keywords": list(missing)
         }
 
-    # ==========================
-    # Generic (non-experience) requirement check
-    # ==========================
+    # Generic SBERT similarity check
     req_emb = sbert_model.encode(requirement, convert_to_tensor=True)
     res_embs = sbert_model.encode(resume_sentences, convert_to_tensor=True)
     sims = util.cos_sim(req_emb, res_embs)[0]
-    best_idx = int(torch.argmax(sims))
+    best_idx = int(sims.argmax())
     best_score = float(sims[best_idx])
     best_sentence = resume_sentences[best_idx] if resume_sentences else ""
     req_keywords = extract_keywords(requirement)
@@ -142,7 +124,7 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
 
     return {
         "requirement": requirement,
-        "status": "✅ Match" if best_score >= 0.6 else "❌ Missing",
+        "status": "✅ Match" if best_score >= 0.70 else "❌ Missing",
         "score": round(best_score, 2),
         "best_sentence": best_sentence,
         "matched_keywords": list(matched),
@@ -169,7 +151,7 @@ def evaluate_resume(resume_text, job_requirements):
 
 # Job Requirements
 job_requirements = [
-    "3-5 years of development experience in SQL / C# / Python",
+    "5+ years of development experience in SQL / C# / Python",
     "Developed and executed medium to large-scale features",
     "Implement automation tools and frameworks (CI/CD pipelines)",
     "Bachelor’s or master’s degree in Computer Science or Engineering",

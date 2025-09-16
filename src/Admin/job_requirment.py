@@ -1,7 +1,7 @@
 import streamlit as st
 import json
 from src.database.db_job_category import get_all_categories
-from src.database.db_config import save_job_requirement, get_requirements_by_category
+from src.database.db_job_requirements import save_job_requirement, get_requirements_by_category
 
 def job_requirements_page():
     st.title("📝 Job Requirements Management")

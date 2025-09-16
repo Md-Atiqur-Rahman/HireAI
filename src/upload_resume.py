@@ -4,7 +4,7 @@ import streamlit as st
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from src.database.db_config import get_categories, get_requirements_by_category
+from src.database.db_job_requirements import get_categories, get_requirements_by_category
 from src.requirement_analysis import evaluate_resume, summarize_results
 from src.Helper.parser import extract_text_from_pdf
 

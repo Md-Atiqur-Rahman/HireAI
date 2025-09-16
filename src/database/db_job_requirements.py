@@ -16,46 +16,59 @@ def init_db():
     conn.commit()
     conn.close()
 
+
 def save_job_requirement(category, reqs):
     """
     Save a list of requirements for a category.
-    reqs can be a single string or a list of strings.
+    Appends new requirements to existing ones if category exists.
     """
-    import json
     if isinstance(reqs, str):
         reqs = [reqs]
+
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO job_requirements (category, requirements) VALUES (?, ?)",
-        (category, json.dumps(reqs))  # <- save as JSON array
-    )
+
+    # Check if category already exists
+    cursor.execute("SELECT requirements FROM job_requirements WHERE category=?", (category,))
+    row = cursor.fetchone()
+
+    if row and row[0]:
+        # Load existing requirements and append new ones
+        existing_reqs = json.loads(row[0])
+        combined_reqs = existing_reqs + reqs
+        cursor.execute(
+            "UPDATE job_requirements SET requirements=? WHERE category=?",
+            (json.dumps(combined_reqs), category)
+        )
+    else:
+        # Insert new row
+        cursor.execute(
+            "INSERT INTO job_requirements (category, requirements) VALUES (?, ?)",
+            (category, json.dumps(reqs))
+        )
+
     conn.commit()
     conn.close()
 
 
+
+
 def get_requirements_by_category(category):
+    """
+    Fetch all requirements for a given category.
+    Returns a Python list of strings.
+    """
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(
-        "SELECT requirements FROM job_requirements WHERE category=?",
-        (category,)
-    )
-    rows = cursor.fetchall()
+    cursor.execute("SELECT requirements FROM job_requirements WHERE category=?", (category,))
+    row = cursor.fetchone()
     conn.close()
 
-    all_requirements = []
-    for row in rows:
-        try:
-            reqs = json.loads(row[0])
-            if isinstance(reqs, list):
-                all_requirements.extend(reqs)
-            else:
-                all_requirements.append(str(reqs))
-        except Exception:
-            all_requirements.append(str(row[0]))
+    if row and row[0]:
+        return json.loads(row[0])
+    return []
 
-    return all_requirements
+
 
 
 def get_categories():

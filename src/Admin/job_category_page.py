@@ -1,6 +1,6 @@
 import streamlit as st
 
-from src.DB.Scripts.job_category import create_category_table, get_all_categories, save_job_category
+from src.database.db_job_category import create_category_table, get_all_categories, save_job_category
 
 
 

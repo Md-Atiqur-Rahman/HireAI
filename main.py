@@ -5,13 +5,12 @@ import spacy
 from sentence_transformers import SentenceTransformer, util
 import torch
 
-from src.DB.Scripts.job_category import delete_job_requirements
 from src.Admin.job_category_page import job_category_page
 from src.Admin.job_requirment import job_requirements_page
 from src.Helper.parser import extract_text_from_pdf
 
 # In main.py or upload_resume.py
-from src.db import  init_db
+from src.database.db_config import  init_db
 from src.upload_resume import resume_uploader
 
 init_db()

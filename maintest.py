@@ -5,7 +5,7 @@ import spacy
 from sentence_transformers import SentenceTransformer, util
 import torch
 
-from src.db import get_categories, get_requirements_by_category
+from src.database.db_config import get_categories, get_requirements_by_category
 from src.Helper.parser import extract_text_from_pdf
 
 # ===============================

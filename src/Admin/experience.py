@@ -1,5 +1,5 @@
 import streamlit as st
-from src.db import save_job_requirement
+from src.database.db_config import save_job_requirement
 
 def experience_section(category):
     st.subheader("➕ Add Experience Requirement")

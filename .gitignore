@@ -1,0 +1,39 @@
+# --- Python cache files ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Virtual environments ---
+env/
+venv/
+.venv/
+
+# --- Environment variables ---
+.env
+*.env
+
+# --- SQLite database files ---
+*.db
+*.sqlite3
+
+# --- Jupyter Notebooks checkpoints ---
+.ipynb_checkpoints/
+
+# --- VS Code settings ---
+.vscode/
+
+# --- OS-specific files ---
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# --- Logs & temp files ---
+*.log
+*.tmp

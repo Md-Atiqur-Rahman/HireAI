@@ -1,7 +1,7 @@
 import streamlit as st
 import json
-from src.DB.Scripts.job_category import get_all_categories
-from src.db import get_all_requirements, save_job_requirement, get_requirements_by_category
+from src.database.db_job_category import get_all_categories
+from src.database.db_config import save_job_requirement, get_requirements_by_category
 
 def job_requirements_page():
     st.title("📝 Job Requirements Management")
@@ -80,7 +80,6 @@ def job_requirements_page():
     # ---- Show Existing Requirements ----
     st.subheader(f"📋 Current Requirements for {category}")
     requirements = get_requirements_by_category(category)
-    print(requirements)
     if requirements:
         for i, req in enumerate(requirements, 1):
             st.markdown(f"{i}. {req}")

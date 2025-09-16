@@ -1,4 +1,4 @@
-from src.db import get_connection
+from src.database.db_config import get_connection
 
 # -------------------
 # Database helper functions

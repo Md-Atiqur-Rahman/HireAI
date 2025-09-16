@@ -1,7 +1,7 @@
 import sqlite3
 import json
 
-from src.db import get_connection
+from src.database.db_config import get_connection
 
 
 

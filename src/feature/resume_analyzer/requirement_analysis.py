@@ -212,39 +212,3 @@ def summarize_results(results):
     ]
 
     return "\n".join(lines)
-
-
-
-# Job Requirements
-job_requirements = [
-    "3-5 years of development experience in SQL / C# / Python",
-    "Developed and executed medium to large-scale features",
-    "Implement automation tools and frameworks (CI/CD pipelines)",
-    "Bachelor’s or master’s degree in Computer Science or Engineering",
-    "Experience with BigQuery, dbt, Snowflake",
-    "Experience in data visualization/Looker/NetSpring",
-    "Understanding the value of pair programming/TDD/Clean Code",
-    "Exposure/Experience leveraging AI"
-]
-
-# Candidate Resume
-candidate_resume = """
-Software Engineer with 6 years of experience in C# and SQL.
-Worked on feature development and bug fixing for enterprise projects.
-Familiar with GitHub Actions for CI/CD pipelines.
-Holds a Bachelor's degree in Computer Science.
-Worked with MongoDB and Oracle databases.
-No experience with BigQuery, dbt, or Snowflake.
-No knowledge of Looker/NetSpring tools.
-Practices clean code principles and pair programming occasionally.
-Learning AI concepts but no production experience yet.
-"""
-# Extract Resume from PDF
-resume_text = extract_text_from_pdf( "E:/Thesis/resume-analyzer/resumes/Md Atiqur Rahman.pdf")
-
-summary, results = evaluate_resume(candidate_resume, job_requirements)
-
-# print(summary)
-
-# print(summarize_results(results))
-

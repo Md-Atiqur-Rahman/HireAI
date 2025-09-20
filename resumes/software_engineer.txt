@@ -1,1 +1,0 @@
-We are looking for a Software Engineer with experience in Python, Django, REST APIs, and cloud platforms like AWS or Azure. Knowledge of Docker, Kubernetes, and CI/CD pipelines is a plus.

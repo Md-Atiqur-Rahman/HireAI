@@ -6,11 +6,15 @@ from src.database.db_job_requirements import save_job_requirement, get_requireme
 def job_requirements_page():
     st.title("📝 Job Requirements Management")
 
-    # Dropdown for category
-    categories = get_all_categories()
-    # Dropdown for category
-    category = st.selectbox("Select Job Category", categories)
-    st.subheader("Add Structured Requirements")
+    categories = get_all_categories() 
+    selected_category_name="";
+    selected_category_id = 0;
+    if not categories:
+        st.warning("No categories found. Please add a category first.")
+    else:
+        category_dict = {cat['name']: cat['id'] for cat in categories} 
+        selected_category_name = st.selectbox("Select Job Category", list(category_dict.keys()))
+        selected_category_id = category_dict[selected_category_name]
 
     # ---- Experience Section ----
     with st.expander("➕ Add Experience Requirement"):
@@ -38,8 +42,8 @@ def job_requirements_page():
                 st.error("Please add at least one subject")
             else:
                 subjects_text = " / ".join(st.session_state.subjects)
-                req_text = f"{category} with {years_input} years of experience in {subjects_text}"
-                save_job_requirement(category, req_text)
+                req_text = f"{selected_category_name} with {years_input} years of experience in {subjects_text}"
+                save_job_requirement(selected_category_id, req_text)
                 st.success(f"Saved: {req_text}")
                 st.session_state.subjects = []  # reset subjects after save
 
@@ -51,7 +55,7 @@ def job_requirements_page():
 
         if add_edu:
             req_text = f"{degree} degree in {field}" if field.strip() else f"{degree} degree"
-            save_job_requirement(category, [req_text])
+            save_job_requirement(selected_category_id, [req_text])
             st.success(f"Added: {req_text}")
 
     # ---- Skills Section ----
@@ -62,7 +66,7 @@ def job_requirements_page():
         if add_skill:
             if skill.strip():
                 req_text = f"Experience with {skill}"
-                save_job_requirement(category, [req_text])
+                save_job_requirement(selected_category_id, [req_text])
                 st.success(f"Added: {req_text}")
             else:
                 st.error("⚠️ Please enter a skill")
@@ -72,14 +76,14 @@ def job_requirements_page():
     custom_req = st.text_area("Custom Requirement")
     if st.button("➕ Add Custom Requirement"):
         if custom_req.strip():
-            save_job_requirement(category, [custom_req.strip()])
+            save_job_requirement(selected_category_id, [custom_req.strip()])
             st.success(f"Added: {custom_req.strip()}")
         else:
             st.error("⚠️ Requirement cannot be empty")
 
     # ---- Show Existing Requirements ----
-    st.subheader(f"📋 Current Requirements for {category}")
-    requirements = get_requirements_by_category(category)
+    st.subheader(f"📋 Current Requirements for {selected_category_name}")
+    requirements = get_requirements_by_category(selected_category_id)
     if requirements:
         for i, req in enumerate(requirements, 1):
             st.markdown(f"{i}. {req}")

@@ -15,3 +15,13 @@ def get_connection():
     return conn
 
 
+def drop_table(table_name):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(f"DROP TABLE IF EXISTS {table_name}")
+    conn.commit()
+    conn.close()
+    print(f"Table '{table_name}' dropped successfully.")
+
+# Usage
+

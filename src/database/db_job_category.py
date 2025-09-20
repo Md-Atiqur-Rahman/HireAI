@@ -25,10 +25,11 @@ def save_job_category(name):
 def get_all_categories():
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT name FROM job_categories")
+    cursor.execute("SELECT id, name FROM job_categories")
     rows = cursor.fetchall()
     conn.close()
-    return [r[0] for r in rows]
+    return [{"id": r[0], "name": r[1]} for r in rows]
+
 
 def delete_job_requirements():
     conn = get_connection()

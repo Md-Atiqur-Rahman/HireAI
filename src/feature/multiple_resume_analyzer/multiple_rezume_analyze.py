@@ -1,5 +1,7 @@
+from src.database.db_job_category import get_all_categories
+from src.database.db_candidates import save_candidate
 from src.feature.resume_analyzer.requirement_analysis import evaluate_resume
-from src.database.db_job_requirements import get_categories, get_requirements_by_category
+from src.database.db_job_requirements import get_requirements_by_category
 # from src.Helper.resume_feedback import generate_resume_feedback_gemini
 import streamlit as st
 import pandas as pd
@@ -7,7 +9,7 @@ import nltk
 
 import plotly.express as px
 
-from src.Helper.extract_general_info import extract_email, extract_entities, extract_phone
+from src.Helper.extract_general_info import extract_email, extract_name_from_text, extract_phone
 from src.Helper.extract_skills import extract_skills_tfidf
 from src.Helper.extractor import extract_keywords
 from src.Helper.parser import extract_text_from_pdf
@@ -32,11 +34,22 @@ def multiple_resume_analysis():
     # UI
     st.title("📄 Resume Analyzer (HireAI)")
     # Get categories and selected category
-    categories = get_categories()
-    selected_category = st.selectbox("Select Job Requirement Category", ["All"] + categories)
+    # categories = get_categories()
+    # selected_category = st.selectbox("Select Job Requirement Category", ["All"] + categories)
+    categories = get_all_categories()  # [(id, name), ...]
+    jd_file_input =[]
+    if not categories:
+        st.warning("No categories found. Please add a category first.")
+    else:
+        category_dict = {cat['name']: cat['id'] for cat in categories} 
 
+    # Dropdown shows only names
+        selected_category_name = st.selectbox("Select Job Category", list(category_dict.keys()))
+
+    # Get corresponding ID
+        selected_category_id = category_dict[selected_category_name]
     # Get requirements for that category
-    jd_file_input = get_requirements_by_category(selected_category)
+        jd_file_input = get_requirements_by_category(selected_category_id)
 
     
     # jd_file_input = st.file_uploader("Upload Job Description (TXT)", type=["txt"])
@@ -91,13 +104,13 @@ def multiple_resume_analysis():
                 resume_text = str(resume_file.read(), "utf-8")
             email = extract_email(resume_text)
             phone = extract_phone(resume_text)
-            orgInfo =extract_entities(resume_text)
+            name =extract_name_from_text(resume_text,email)
             skills = extract_skills_tfidf(resume_text,st.session_state.jd_text)
             summary_text, total_exp, total_score = evaluate_resume(resume_text, st.session_state.jd_file)
             experience = total_exp
             total_score = total_score
             result = {
-                "Candidate": orgInfo["Name"],
+                "Candidate": name,
                 "Email": email,
                 "Contact": phone,
                 "Experience": experience,
@@ -105,6 +118,9 @@ def multiple_resume_analysis():
                 "Skills": skills,
                 "SummaryText":summary_text
             }
+
+            save_candidate(name, email, phone, experience, total_score, skills, summary_text, selected_category_id)
+
 
             st.session_state.results.append(result)
 
@@ -141,7 +157,8 @@ def multiple_resume_analysis():
                     row_cols[3].markdown(row["Contact"])
                     row_cols[4].markdown(row["Experience"])
                     row_cols[5].markdown(row["TotalScore"])
-                    unique_id = f"{row['Email']}_{idx}"
+                    # unique_id = f"{row['Email']}_{idx}"
+                    unique_id = f"{row['Email']}_{i}_{idx}"
                     if row_cols[6].button("Details", key=f"details_btn_live_{unique_id}"):
                         st.session_state.selected_candidate = row.to_dict()
 
@@ -190,7 +207,7 @@ def multiple_resume_analysis():
                 row_cols[3].markdown(row["Contact"])
                 row_cols[4].markdown(row["Experience"])
                 row_cols[5].markdown(row["TotalScore"])
-                unique_id = f"{row['Email']}_{i}"
+                unique_id = f"{row['Email']}_{i}_{row.name}"
                 if row_cols[6].button("Details", key=f"details_btn_final_{unique_id}"):
                     st.session_state.selected_candidate = row.to_dict()
 

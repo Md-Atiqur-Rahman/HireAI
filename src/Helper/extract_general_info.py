@@ -64,3 +64,57 @@ def clean_list(items):
 # 🔹Designations & Organizations
 def clean_list(items):
     return list(set([item.strip().title() for item in items if len(item) > 2]))
+
+
+import spacy
+
+# Load spaCy English model
+nlp = spacy.load("en_core_web_sm")
+
+import re
+
+import re
+
+import re
+
+import re
+
+def extract_name_from_text(resume_text, email=None):
+    """
+    Extract candidate's name from resume text.
+    """
+    lines = [line.strip() for line in resume_text.split("\n") if line.strip()]
+
+    # First, check for explicit 'Name:' pattern
+    for line in lines[:15]:
+        match = re.match(r"(?i)^name[:\-]\s*(.+)$", line)  # case-insensitive
+        if match:
+            name_candidate = match.group(1).strip()
+            # remove extra symbols
+            name_candidate = re.sub(r"[^A-Za-z\s\.\-]", "", name_candidate)
+            if name_candidate:
+                return name_candidate
+
+    # Fallback: scan top lines for probable name
+    for line in lines[:15]:
+        # Remove unwanted patterns like (cid:xxx) or numbers
+        cleaned_line = re.sub(r"\(cid:\d+\)|[0-9\+\-]", "", line).strip()
+
+        # Skip lines with keywords
+        lower_line = cleaned_line.lower()
+        if any(keyword in lower_line for keyword in ["contact", "phone", "email", "github", "linkedin", "address", "skills", "experience", "roll no", "youtube"]):
+            continue
+
+        # If line has mostly letters and spaces, consider it a name
+        if re.match(r"^[A-Za-z\s\.]+$", cleaned_line) and 1 <= len(cleaned_line.split()) <= 5:
+            return cleaned_line
+
+    # Fallback: get name from email
+    if email:
+        username = email.split("@")[0]
+        name_parts = username.replace(".", " ").replace("_", " ").title()
+        return name_parts
+
+    return "Unknown"
+
+

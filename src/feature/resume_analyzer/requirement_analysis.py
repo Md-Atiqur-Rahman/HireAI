@@ -28,6 +28,9 @@ def extract_experience_entries(text):
         r"(?P<title>.*?)\s+at\s+(?P<company>.*?)\s*\[(?P<start>\d{2}/\d{4})\]\s*-\s*\[(?P<end>\d{2}/\d{4}|Present)\]",
         r"(?P<title>.*?)\n(?P<company>.*?)\n(?P<start>\d{2}/\d{4})\s*-\s*(?P<end>\d{2}/\d{4}|Present)",
         r"(?P<title>.+?),\s*(?P<company>.+?)\n(?P<start>[A-Za-z\.]+ \d{4})\s*-\s*(?P<end>[A-Za-z\.]+ \d{4}|Present)",
+
+        r"(?P<title>.*?)\s*\|\s*(?P<company>.*?)\n(?P<start>[A-Za-z]+\s*\d{4})\s*[-–]\s*(?P<end>[A-Za-z]+\s*\d{4}|Present)",
+        r"(?P<title>.*?)\s+(at|@)\s+(?P<company>.*?)\s*(?P<start>[A-Za-z]+\s*\d{4})\s*[-–]\s*(?P<end>[A-Za-z]+\s*\d{4}|Present)",
     ]
 
     matches = []
@@ -52,6 +55,7 @@ def extract_experience_entries(text):
             continue
 
     total_years = round(total_months / 12, 1)
+    print("total_years----->",total_years)
     return experience_entries, total_years
 
 def extract_years_from_text(text):

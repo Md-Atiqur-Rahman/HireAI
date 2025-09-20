@@ -28,6 +28,6 @@ def job_category_page():
     categories = get_all_categories()
     if categories:
         for i, cat in enumerate(categories, 1):
-            st.write(f"{i}. {cat}")
+            st.write(f"{i}. {cat['name']}")
     else:
         st.info("No job categories found yet.")

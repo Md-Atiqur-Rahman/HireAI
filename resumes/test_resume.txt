@@ -1,9 +1,17 @@
-Software Engineer with 6 years of experience in C# and SQL.
-Worked on feature development and bug fixing for enterprise projects.
-Familiar with GitHub Actions for CI/CD pipelines.
-Holds a Bachelor's degree in Computer Science.
-Worked with MongoDB and Oracle databases.
-No experience with BigQuery, dbt, or Snowflake.
-No knowledge of Looker/NetSpring tools.
-Practices clean code principles and pair programming occasionally.
-Learning AI concepts but no production experience yet.
+Name: Shan shune
+Email: shan.shune@example.com
+Contact: +880123456789
+
+Work Experience
+------------------------
+Software Engineer | XYZ Solutions
+Jan 2022 – Present
+- Developing web applications using ASP.NET Core and C#.
+- Working with SQL Server for database design and queries.
+
+Skills
+------------------------
+- C#, .NET Core, ASP.NET MVC
+- SQL Server
+- JavaScript
+- Git

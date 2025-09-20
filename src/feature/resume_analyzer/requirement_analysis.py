@@ -5,6 +5,7 @@ import spacy
 from sentence_transformers import SentenceTransformer, util
 import torch
 
+from src.Helper.resume_experience_gimini import generate_resume_experience_gemini
 from src.Helper.parser import extract_text_from_pdf
 
 # ===============================
@@ -89,7 +90,9 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
             min_years = int(single_match.group(1))
 
         # Step 1: Try advanced extraction
-        _, total_years = extract_experience_entries(resume_text)
+        total_years = generate_resume_experience_gemini(resume_text)
+        print(total_years)
+        # _, total_years = extract_experience_entries(resume_text)
 
         # Step 2: Fallback regex if advanced extraction fails
         if total_years == 0:

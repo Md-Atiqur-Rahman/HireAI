@@ -1,18 +1,14 @@
-from src.feature.resume_analyzer.requirement_analysis import evaluate_resume, summarize_results
+from src.feature.resume_analyzer.requirement_analysis import evaluate_resume
 from src.database.db_job_requirements import get_categories, get_requirements_by_category
-from src.Helper.ats_score import calculate_ats_score
 # from src.Helper.resume_feedback import generate_resume_feedback_gemini
 import streamlit as st
 import pandas as pd
 import nltk
 
-from sklearn.feature_extraction.text import TfidfVectorizer
 import plotly.express as px
 
-from src.Helper.extract_experience_details import extract_experience_entries
-from src.Helper.extract_general_info import extract_email, extract_entities, extract_phone, filter_organizations
+from src.Helper.extract_general_info import extract_email, extract_entities, extract_phone
 from src.Helper.extract_skills import extract_skills_tfidf
-from src.Helper.semantic_similarity import calculate_semantic_similarity
 from src.Helper.extractor import extract_keywords
 from src.Helper.parser import extract_text_from_pdf
 
@@ -44,8 +40,12 @@ def multiple_resume_analysis():
 
     
     # jd_file_input = st.file_uploader("Upload Job Description (TXT)", type=["txt"])
-    resume_files_input = st.file_uploader("Upload Resume PDFs", type=["pdf"], accept_multiple_files=True)
-
+    # resume_files_input = st.file_uploader("Upload Resume PDFs", type=["pdf"], accept_multiple_files=True)
+    resume_files_input = st.file_uploader(
+            "Upload resumes (PDF or TXT)",
+            type=["pdf", "txt"],
+            accept_multiple_files=True
+        )
     # Store uploaded files in session state
     if jd_file_input:
         st.session_state.jd_file = jd_file_input
@@ -58,9 +58,11 @@ def multiple_resume_analysis():
     if st.session_state.jd_text  and st.session_state.resume_files_input:
         st.markdown("### 🔍 Ready to Analyze Resumes")
         if st.button("🔍 Analyze Resumes"):
+            if not resume_files_input:
+                st.warning("Please upload at least one resume file.")
+                return
             st.session_state.analyze_triggered = True
             st.session_state.analysis_done = False
-
     # Layout placeholders
     progress_bar = st.empty()
     status_text = st.empty()
@@ -83,57 +85,23 @@ def multiple_resume_analysis():
         for idx, resume_file in enumerate(st.session_state.resume_files):
             status_text.text(f"🔍 Analyzing: {resume_file.name} ({idx}/{total_resumes})")
 
-            resume_text = extract_text_from_pdf(resume_file)
-            # resume_keywords = extract_keywords(resume_text)
+            if resume_file.type == "application/pdf":
+                resume_text = extract_text_from_pdf(resume_file)
+            else:  # txt file
+                resume_text = str(resume_file.read(), "utf-8")
             email = extract_email(resume_text)
             phone = extract_phone(resume_text)
-            #experience = extract_experience_duration(resume_text)
-            # experience_details, experience  = extract_experience_entries(resume_text)
             orgInfo =extract_entities(resume_text)
             skills = extract_skills_tfidf(resume_text,st.session_state.jd_text)
-            # documents = [st.session_state.jd_text, resume_text]
-            # vectorizer = TfidfVectorizer(stop_words='english')
-            # tfidf_matrix = vectorizer.fit_transform(documents)
-            # feature_names = vectorizer.get_feature_names_out()
-            # jd_scores = tfidf_matrix[0].toarray()[0]
-            # resume_scores = tfidf_matrix[1].toarray()[0]
-
-            # tfidf_match_score = sum([jd_scores[i] for i in range(len(feature_names)) if jd_scores[i] > 0.1 and resume_scores[i] > 0]) / sum(jd_scores) * 100 if sum(jd_scores) > 0 else 0
-            # semantic_similarity_score = calculate_semantic_similarity(resume_text, st.session_state.jd_text)
-            # keyword_coverage_score = len(set(resume_keywords).intersection(set(st.session_state.jd_keywords))) / len(set(st.session_state.jd_keywords)) * 100 if st.session_state.jd_keywords else 0
-            # fit_score = (0.4 * tfidf_match_score) + (0.4 * semantic_similarity_score) + (0.2 * keyword_coverage_score)
-
-            # missing_keywords = [word for i, word in enumerate(feature_names) if jd_scores[i] > 0.1 and resume_scores[i] == 0]
-            # generic_terms = {"also", "us", "x", "join", "apply", "offer", "required", "preferred", "related", "within", "looking", "invite"}
-            # missing_keywords = [kw for kw in missing_keywords if kw not in generic_terms]
-            # orgs_raw = orgInfo.get("Organizations", [])
-            # orgs_filtered = filter_organizations(orgs_raw, resume_text)
-            # ats_result = calculate_ats_score(resume_text, st.session_state.jd_text)
-            # feedback = generate_resume_feedback_gemini(resume_text, st.session_state.jd_text)
-            # result["Feedback"] = feedback
             summary_text, total_exp, total_score = evaluate_resume(resume_text, st.session_state.jd_file)
             experience = total_exp
             total_score = total_score
-            print("Test-------------->",total_score)
             result = {
                 "Candidate": orgInfo["Name"],
                 "Email": email,
                 "Contact": phone,
-                # "Organizations":orgs_filtered,
-                # "Designations": orgInfo.get("Designations", []),
                 "Experience": experience,
                 "TotalScore": total_score,
-                # "ATS Score": ats_result["ATS Score"],
-                # "Keyword Match Score (%)":ats_result["Keyword Match Score (%)"],
-                # "Matched Keywords":ats_result["Matched Keywords"],
-                # "Missing Keywords":ats_result["Missing Keywords"],
-                # "Formatting Deductions":ats_result["Formatting Deductions"],
-
-                # "TF-IDF Match (%)": round(tfidf_match_score, 2),
-                # "Semantic Similarity (%)": round(semantic_similarity_score, 2),
-                # "Keyword Coverage (%)": round(keyword_coverage_score, 2),
-                # "Fit Score (%)": round(fit_score, 2),
-                # "Missing Keywords": ", ".join(missing_keywords),
                 "Skills": skills,
                 "SummaryText":summary_text
             }
@@ -243,11 +211,6 @@ def multiple_resume_analysis():
             with resume_analysis_container.container():
                 st.subheader(f"📄 Analysis for {candidate.get('Candidate', 'Unknown')}")
                 with st.expander("📋 Detailed Analysis", expanded=True):
-                    # st.write(f"**ATS Keyword Match Score (%):** {candidate['Keyword Match Score (%)']}")
-                    # st.write(f"**TF-IDF Keyword Match Score (%):** {candidate['TF-IDF Match (%)']}")
-                    # st.write(f"**Semantic Similarity Keyword Match Score (%):** {candidate['Semantic Similarity (%)']}")
-                    # st.write(f"**Keyword Coverage Match Score (%):** {candidate['Keyword Coverage (%)']}")
-                    # st.write(f"**ATS Score (%):** {candidate['ATS Score']}")
                     st.write(f"**Score (%):** {candidate['TotalScore']}")
                     st.text(candidate['SummaryText']) 
                 if st.button("❌ Close Details"):

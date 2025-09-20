@@ -30,6 +30,42 @@ def dashboard_page():
     if df.empty:
         st.warning(f"No candidates found for category '{selected_category_name}'.")
         return
+    # 🔹 Total Resumes Donut Chart (Centered, Smaller Circle)
+    total_resumes = len(df)
+
+    # Create 3 columns: left empty, center for chart, right empty
+    col1, col2, col3 = st.columns([1, 2, 1])  # center column wider
+
+    with col2:
+        st.subheader("📈 Total Resumes Analyzed")
+        
+        fig_total = px.pie(
+            names=["Resumes Analyzed"], 
+            values=[total_resumes], 
+            hole=0.4,  # Bigger hole = smaller circle
+        )
+
+        # Hide text labels on slices
+        fig_total.update_traces(
+            textinfo='none', 
+            marker_colors=['#636EFA']  # Optional color
+        )
+
+        # Add bold annotation in the middle
+        fig_total.update_layout(
+            showlegend=False,
+            margin=dict(t=0, b=0, l=0, r=0),
+            width=300,  # Smaller width
+            height=300,  # Smaller height
+            annotations=[dict(
+                text=f"<b>{total_resumes}</b>",  # Bold
+                x=0.5, y=0.5,  # Center
+                font=dict(size=30, color="black"),
+                showarrow=False
+            )]
+        )
+
+        st.plotly_chart(fig_total, use_container_width=False)
 
     # Sort by TotalScore descending
     df = df.sort_values(by="TotalScore", ascending=False).reset_index(drop=True)

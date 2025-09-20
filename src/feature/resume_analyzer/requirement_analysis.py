@@ -90,9 +90,9 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
             min_years = int(single_match.group(1))
 
         # Step 1: Try advanced extraction
-        total_years = generate_resume_experience_gemini(resume_text)
-        print(total_years)
-        # _, total_years = extract_experience_entries(resume_text)
+        # total_years = generate_resume_experience_gemini(resume_text)
+        # print(total_years)
+        _, total_years = extract_experience_entries(resume_text)
 
         # Step 2: Fallback regex if advanced extraction fails
         if total_years == 0:
@@ -161,12 +161,28 @@ def evaluate_resume(resume_text, job_requirements):
 
     results = [check_requirement(req, resume_sentences, resume_keywords, resume_text) for req in job_requirements]
 
-    # Summary like LinkedIn
+    # 🔹 Total work experience (years) from experience requirements
+    exp_results = [r for r in results if "experience_check" in r]
+    total_experience = 0.0
+    if exp_results:
+        # Take the total_years from the first experience requirement (assuming 1 main experience req)
+        # Or you could take max of all
+        for r in exp_results:
+            match = re.search(r"Candidate:\s*([\d\.]+)\s*years", r["experience_check"])
+            if match:
+                total_experience = float(match.group(1))
+                break
+
+    # 🔹 Summary like LinkedIn
     met_count = sum(1 for r in results if r["status"].startswith("✅"))
     total_count = len(results)
     summary = f"Matches {met_count} of the {total_count} required qualifications"
 
-    return summary, results
+    # 🔹 Overall score
+    overall_score ,summary_text= summarize_results(results)
+
+    return summary_text, total_experience, overall_score
+
 
 def summarize_results(results):
     # Assign weights (higher for experience & education, lower for skills)
@@ -213,5 +229,5 @@ def summarize_results(results):
         f"\n⚠️ Missing Requirements:\n   ❌ " + "\n   ❌ ".join(missing) if missing else "⚠️ Missing: None",
         f"\n🔢 Score: {overall_score}%"
     ]
-
-    return "\n".join(lines)
+    
+    return overall_score,"\n".join(lines)

@@ -1,16 +1,8 @@
-import re
-from dateutil import parser
-from datetime import datetime
-import spacy
-from sentence_transformers import SentenceTransformer, util
-import torch
-
 
 from src.feature.multiple_resume_analyzer.multiple_rezume_analyze import multiple_resume_analysis
 from src.database.db_job_requirements import init_db
 from src.Admin.job_category_page import job_category_page
 from src.Admin.job_requirment import job_requirements_page
-from src.Helper.parser import extract_text_from_pdf
 
 # In main.py or upload_resume.py
 from src.feature.resume_analyzer.single_resume_analyzer import resume_uploader

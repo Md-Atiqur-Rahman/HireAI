@@ -35,8 +35,8 @@ def resume_uploader():
         else:
             resume_text = str(uploaded_file.read(), "utf-8")
 
-        summary, results = evaluate_resume(resume_text, job_requirements)
-        summary_text = summarize_results(results)
+        summary_text, total_exp, total_score = evaluate_resume(resume_text, job_requirements)
+        # summary_text = summarize_results(results)
         st.subheader("Resume Evaluation Summary")
         st.text(summary_text) 
         

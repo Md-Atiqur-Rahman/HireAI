@@ -1,4 +1,5 @@
 import streamlit as st
+from src.Admin.job_requirment import job_requirements_page
 from src.feature.dashboards.test_dasboard import test_dashboard_page
 from src.feature.dashboards.dashboard import dashboard_page
 from src.feature.multiple_resume_analyzer.multiple_rezume_analyze import multiple_resume_analysis
@@ -22,7 +23,7 @@ st.markdown("""
 .sidebar-title {font-size:22px;font-weight:bold;text-align:center;color:#5dade2;margin-bottom:25px;}
 
 /* Make all buttons same size */
-.stButton>button {
+[data-testid="stSidebar"] .stButton>button {
     width: 200px !important; /* fixed width */
     height: 50px !important; /* fixed height */
     margin: 8px 0 !important;
@@ -35,7 +36,7 @@ st.markdown("""
     border: none !important;
     transition: 0.3s !important;
 }
-.stButton>button:hover {
+[data-testid="stSidebar"] .stButton>button:hover {
     background: linear-gradient(90deg, #1abc9c, #16a085) !important;
 }
 </style>
@@ -47,12 +48,13 @@ with st.sidebar:
     st.markdown('<div class="sidebar-title">Hire AI</div>', unsafe_allow_html=True)
 
     menu_items = {
-        "🏠 HOME": "home",
-        "🔍 RESUME ANALYZER": "analyzer",
-        "📝 RESUME BUILDER": "builder",
-        "📊 DASHBOARD": "dashboard",
-        "🎯 JOB SEARCH": "jobs"
+        "📊 DASHBOARD": "dashboard",             # Dashboard overview
+        "🔍 RESUME ANALYZER": "analyzer",        # Analyze a single resume
+        "🗂️ All RESUME ANALYZER": "allanalyzer", # Analyze multiple resumes
+        "➕ Add Requirements": "JobRequirements", # Add new job requirements
+        "🏷️ Add Categories": "JobCategories"     # Add new job categories
     }
+
 
     for label, page_name in menu_items.items():
         btn_key = f"btn_{page_name}"
@@ -62,13 +64,14 @@ with st.sidebar:
 
 # Page routing
 page = st.session_state.page
-if page == "home":
+if page == "dashboard":
     test_dashboard_page()
+    # dashboard_page()
 elif page == "analyzer":
     resume_uploader()
-elif page == "builder":
+elif page == "allanalyzer":
     multiple_resume_analysis()
-elif page == "dashboard":
-    dashboard_page()
-elif page == "jobs":
+elif page == "JobRequirements":
+    job_requirements_page()
+elif page == "JobCategories":
     job_category_page()

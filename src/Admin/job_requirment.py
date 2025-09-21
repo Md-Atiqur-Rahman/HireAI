@@ -1,11 +1,12 @@
 import streamlit as st
 import json
+from src.Helper.banner_style import banner_style
 from src.database.db_job_category import get_all_categories
 from src.database.db_job_requirements import save_job_requirement, get_requirements_by_category
 
 def job_requirements_page():
-    st.title("📝 Job Requirements Management")
-
+    # st.title("📝 Job Requirements Management")
+    banner_style("Job Requirements Management 📝")
     categories = get_all_categories() 
     selected_category_name="";
     selected_category_id = 0;

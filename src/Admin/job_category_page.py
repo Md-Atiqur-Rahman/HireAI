@@ -1,5 +1,6 @@
 import streamlit as st
 
+from src.Helper.banner_style import banner_style
 from src.database.db_job_category import create_category_table, get_all_categories, save_job_category
 
 
@@ -9,8 +10,8 @@ from src.database.db_job_category import create_category_table, get_all_categori
 # Streamlit page
 # -------------------
 def job_category_page():
-    st.title("📂 Job Category Management")
-
+    # st.title("📂 Job Category Management")
+    banner_style("Job Category Management 🏷️")
     # Ensure table exists
     create_category_table()
 

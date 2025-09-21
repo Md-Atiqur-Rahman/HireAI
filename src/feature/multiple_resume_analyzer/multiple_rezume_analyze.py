@@ -1,3 +1,4 @@
+from src.Helper import banner_style
 from src.database.db_job_category import get_all_categories
 from src.database.db_candidates import save_candidate
 from src.feature.resume_analyzer.requirement_analysis import evaluate_resume
@@ -13,7 +14,7 @@ from src.Helper.extract_general_info import extract_email, extract_name_from_tex
 from src.Helper.extract_skills import extract_skills_tfidf
 from src.Helper.extractor import extract_keywords
 from src.Helper.parser import extract_text_from_pdf
-
+from src.Helper.banner_style import banner_style
 
 def multiple_resume_analysis():
     # Download NLTK data
@@ -32,7 +33,8 @@ def multiple_resume_analysis():
         st.rerun()
 
     # UI
-    st.title("📄Multiple Resume Analyzer (HireAI)")
+    # st.title("📄Multiple Resume Analyzer (HireAI)")
+    banner_style("Multiple Resume Analyzer 🔍")
     # Get categories and selected category
     # categories = get_categories()
     # selected_category = st.selectbox("Select Job Requirement Category", ["All"] + categories)

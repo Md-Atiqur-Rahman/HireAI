@@ -1,9 +1,11 @@
+from datetime import datetime
 import sys
 import os
 import streamlit as st
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
+from src.Helper.banner_style import banner_style
 from src.Helper.extract_skills import extract_skills_tfidf
 from src.Helper.extract_general_info import extract_email, extract_name_from_text, extract_phone
 from src.database.db_candidates import save_candidate
@@ -23,7 +25,8 @@ from src.Helper.parser import extract_text_from_pdf
 
 
 def resume_uploader():
-    st.title("Resume Analyzer (HireAI)")
+    # st.title("Resume Analyzer (HireAI)")
+    banner_style("Resume Analyzer 🔍")
     # categories = get_categories()
     # selected_category = st.selectbox("Select Job Requirement Category", ["All"] + categories)
     categories = get_all_categories()  # [(id, name), ...]

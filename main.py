@@ -6,11 +6,11 @@ from src.feature.multiple_resume_analyzer.multiple_rezume_analyze import multipl
 from src.feature.resume_analyzer.single_resume_analyzer import resume_uploader
 from src.Admin.job_category_page import job_category_page
 
-st.set_page_config(page_title="Hire AI", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="Hire AI", page_icon="https://cdn-icons-png.flaticon.com/512/3135/3135714.png", layout="wide")
 
 # Initialize session state
 if "page" not in st.session_state:
-    st.session_state.page = "home"
+    st.session_state.page = "dashboard"
 
 # Sidebar CSS
 st.markdown("""
@@ -44,7 +44,7 @@ st.markdown("""
 
 # Sidebar menu
 with st.sidebar:
-    st.markdown('<div class="sidebar-logo"><img src="https://cdn-icons-png.flaticon.com/512/1995/1995574.png" width="120"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-logo"><img src="https://cdn-icons-png.flaticon.com/512/3135/3135714.png" width="120"></div>', unsafe_allow_html=True)
     st.markdown('<div class="sidebar-title">Hire AI</div>', unsafe_allow_html=True)
 
     menu_items = {

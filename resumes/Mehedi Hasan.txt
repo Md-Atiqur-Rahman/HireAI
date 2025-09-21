@@ -1,0 +1,31 @@
+Name: Mehedi Hasan
+Email: mehedi.hasan@example.com
+Contact: +8801998765432
+
+Summary
+----------------------------------
+Backend-focused .NET Specialist with 4 years of hands-on experience in creating scalable APIs and high-performance backend systems. Strong database skills and microservices knowledge.
+
+Work Experience
+----------------------------------
+Senior Backend Engineer | CloudByte Technologies
+Apr 2022 – Present
+- Designed RESTful and gRPC APIs in .NET 6.
+- Implemented distributed caching with Redis.
+- Migrated on-prem systems to Azure SQL.
+
+Software Engineer | DataEdge Ltd.
+Jan 2019 – Mar 2022
+- Maintained legacy .NET applications and migrated modules to Core.
+- Designed role-based authorization with Identity Server.
+- Conducted unit testing and performance tuning.
+
+Skills
+----------------------------------
+C#, .NET Core, Web API, Entity Framework, SQL Server, Redis, gRPC, Azure
+
+Education
+----------------------------------
+B.Sc. in Software Engineering  
+East West University, Bangladesh  
+2018

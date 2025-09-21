@@ -21,7 +21,7 @@ def multiple_resume_analysis():
     nltk.download('stopwords')
 
     # Initialize session state
-    for key in ["results", "analysis_done", "jd_text", "jd_keywords", "resume_files", "jd_file", "resume_files_input", "analyze_triggered"]:
+    for key in ["results", "analysis_done", "jd_text", "jd_keywords", "resume_files", "jd_file", "resume_files_input", "analyze_triggered","selected_candidate" ]:
         if key not in st.session_state:
             st.session_state[key] = [] if "files" in key or key == "jd_keywords" else False if "done" in key or "triggered" in key else ""
 

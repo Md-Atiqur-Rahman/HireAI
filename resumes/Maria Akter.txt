@@ -1,0 +1,31 @@
+Name: Maria Akter
+Email: maria.akter@example.com
+Contact: +8801556789123
+
+Summary
+----------------------------------
+Full Stack Developer with 4 years of professional experience in .NET technologies, front-end frameworks, and cloud deployment. Strong expertise in building scalable applications with ASP.NET Core, Angular, and Microsoft Azure.
+
+Work Experience
+----------------------------------
+Full Stack Developer | SmartTech Solutions
+Feb 2021 – Present
+- Designed microservices architecture using .NET Core.
+- Implemented CI/CD pipelines with Azure DevOps.
+- Built interactive UI components using Angular 12.
+
+Software Engineer | CodeCrafters Ltd.
+Jan 2019 – Jan 2021
+- Developed financial applications using ASP.NET MVC and Entity Framework.
+- Integrated third-party APIs for payment processing.
+- Worked closely with QA to ensure bug-free delivery.
+
+Skills
+----------------------------------
+C#, ASP.NET Core, Angular, JavaScript, TypeScript, SQL Server, Docker, Azure DevOps, GitHub Actions
+
+Education
+----------------------------------
+B.Sc. in Software Engineering  
+North South University, Bangladesh  
+2018

@@ -15,7 +15,7 @@ from src.Helper.parser import extract_text_from_pdf
 # ============================
 # Resume Analysis Page
 # ============================
-st.title("Resume Analyzer")
+
 
 # Load categories and requirements
 
@@ -23,7 +23,7 @@ st.title("Resume Analyzer")
 
 
 def resume_uploader():
-
+    st.title("Resume Analyzer (HireAI)")
     # categories = get_categories()
     # selected_category = st.selectbox("Select Job Requirement Category", ["All"] + categories)
     categories = get_all_categories()  # [(id, name), ...]

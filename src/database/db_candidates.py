@@ -1,4 +1,5 @@
 import json
+import sqlite3
 import pandas as pd
 
 from src.database.db_config import get_connection
@@ -81,6 +82,47 @@ def get_all_candidates():
             "CategoryId": row[7]
         })
     return candidates
+
+
+
+def get_candidates_paginated(category_id=None, limit=5, offset=0):
+    conn = get_connection()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    if category_id:
+        cursor.execute("""
+            SELECT rowid, * FROM candidates
+            WHERE category_id = ?
+            ORDER BY TotalScore DESC
+            LIMIT ? OFFSET ?
+        """, (category_id, limit, offset))
+    else:
+        cursor.execute("""
+            SELECT rowid, * FROM candidates
+            ORDER BY TotalScore DESC
+            LIMIT ? OFFSET ?
+        """, (limit, offset))
+
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+
+
+def get_candidates_count(category_id=None):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    if category_id:
+        cursor.execute("SELECT COUNT(*) FROM candidates WHERE category_id = ?", (category_id,))
+    else:
+        cursor.execute("SELECT COUNT(*) FROM candidates")
+
+    count = cursor.fetchone()[0]
+    conn.close()
+    return count
+
 
 
 

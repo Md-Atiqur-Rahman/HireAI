@@ -1,0 +1,31 @@
+Name: Arif Chowdhury
+Email: arif.chowdhury@example.com
+Contact: +8801934567890
+
+Summary
+----------------------------------
+Backend-focused .NET Developer with 4+ years of experience. Specialized in designing APIs, optimizing SQL databases, and implementing microservices.
+
+Work Experience
+----------------------------------
+Senior Backend Developer | CloudEdge IT
+Mar 2022 – Present
+- Developed scalable microservices using .NET 6.
+- Enhanced system performance by redesigning database indexes.
+- Implemented JWT-based authentication and role-based authorization.
+
+Software Engineer | BrightSoft Ltd.
+Feb 2019 – Feb 2022
+- Maintained and upgraded legacy ASP.NET MVC applications.
+- Built reusable components with Entity Framework Core.
+- Designed database schemas for enterprise clients.
+
+Skills
+----------------------------------
+C#, ASP.NET Core, Web API, Entity Framework Core, SQL Server, MongoDB, Redis, Docker, RabbitMQ
+
+Education
+----------------------------------
+B.Sc. in Computer Science  
+Ahsanullah University of Science and Technology (AUST), Bangladesh  
+2018

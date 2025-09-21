@@ -1,0 +1,31 @@
+Name: Sharmeen Akter
+Email: sharmeen.akter@example.com
+Contact: +8801711223344
+
+Summary
+----------------------------------
+Software Engineer with 4 years of professional experience in .NET and cloud technologies. Skilled in building distributed systems and deploying applications on Azure.
+
+Work Experience
+----------------------------------
+Software Engineer | CloudX Systems
+Mar 2021 – Present
+- Built scalable APIs with ASP.NET Core Web API.
+- Implemented CI/CD with Azure DevOps pipelines.
+- Integrated Azure Blob storage for document management.
+
+Junior Software Engineer | BrightCode IT
+Jan 2019 – Feb 2021
+- Developed and maintained ASP.NET MVC applications.
+- Handled complex SQL queries and performance optimization.
+- Assisted in cloud migration projects.
+
+Skills
+----------------------------------
+C#, ASP.NET Core, SQL Server, Azure, Blob Storage, Web API, Angular, Git
+
+Education
+----------------------------------
+B.Sc. in Computer Science & Engineering  
+Khulna University of Engineering & Technology (KUET), Bangladesh  
+2019

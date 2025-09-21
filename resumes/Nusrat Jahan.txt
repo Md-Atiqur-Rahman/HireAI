@@ -1,0 +1,31 @@
+Name: Nusrat Jahan
+Email: nusrat.jahan@example.com
+Contact: +8801567890345
+
+Summary
+----------------------------------
+Full Stack .NET Engineer with 4+ years of experience. Strong knowledge in backend development with ASP.NET Core and modern front-end with React.js. Hands-on with DevOps pipelines.
+
+Work Experience
+----------------------------------
+Full Stack Engineer | DevWorks IT
+Feb 2021 – Present
+- Designed backend APIs with .NET 6 and EF Core.
+- Built React.js front-end with Redux for state management.
+- Automated deployments using GitHub Actions.
+
+Software Engineer | DynamicSoft
+Jan 2019 – Jan 2021
+- Maintained ASP.NET MVC projects for ERP solutions.
+- Enhanced reporting modules with Crystal Reports.
+- Debugged and resolved critical production bugs.
+
+Skills
+----------------------------------
+C#, ASP.NET Core, React.js, Redux, JavaScript, SQL Server, GitHub Actions, Docker
+
+Education
+----------------------------------
+B.Sc. in Computer Science  
+United International University (UIU), Bangladesh  
+2018

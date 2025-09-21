@@ -1,0 +1,38 @@
+Name: Rajib Hasan
+Email: rajib.hasan@example.com
+Contact: +8801712345678
+
+Summary
+----------------------------------
+Highly skilled .NET Developer with 4 years of experience in designing and building scalable web applications. Proficient in ASP.NET Core, C#, Entity Framework, and SQL Server. Adept at working with front-end frameworks like Angular and React. Strong problem-solving skills with hands-on experience in Agile environments.
+
+Work Experience
+----------------------------------
+Software Engineer | TechVision Ltd.
+Jan 2022 – Present
+- Designed and developed RESTful APIs using ASP.NET Core.
+- Implemented authentication and authorization using Identity Server.
+- Optimized SQL queries and improved database performance by 30%.
+- Collaborated with front-end team to integrate Angular with .NET backend.
+
+Junior Software Engineer | SoftBridge IT
+Jan 2020 – Dec 2021
+- Built enterprise modules using ASP.NET MVC and C#.
+- Developed stored procedures, triggers, and views in SQL Server.
+- Participated in Agile sprints, ensuring timely delivery of features.
+- Assisted in migrating legacy .NET applications to .NET Core.
+
+Skills
+----------------------------------
+- Languages: C#, JavaScript, SQL, TypeScript
+- Frameworks: ASP.NET Core, ASP.NET MVC, Entity Framework, LINQ
+- Databases: SQL Server, Oracle, MongoDB
+- Frontend: Angular, React, Bootstrap, HTML5, CSS3
+- Tools: Git, Azure DevOps, Postman, Docker
+- Cloud: Microsoft Azure
+
+Education
+----------------------------------
+B.Sc. in Computer Science & Engineering
+Daffodil International University, Bangladesh
+2019

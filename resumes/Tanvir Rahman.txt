@@ -1,0 +1,31 @@
+Name: Tanvir Rahman
+Email: tanvir.rahman@example.com
+Contact: +8801789012345
+
+Summary
+----------------------------------
+.NET Core Developer with 4 years of experience in designing and developing enterprise web applications. Expertise in RESTful API development, LINQ, and cloud deployment on AWS.
+
+Work Experience
+----------------------------------
+Software Engineer | PrimeSoft Ltd.
+Jan 2022 – Present
+- Developed multi-tenant SaaS applications using ASP.NET Core 6.
+- Implemented AWS S3 for secure file storage.
+- Optimized LINQ queries for performance improvements.
+
+Junior Developer | WebTech Solutions
+Jan 2019 – Dec 2021
+- Worked on HR management system using ASP.NET MVC.
+- Built stored procedures, triggers, and views in SQL Server.
+- Collaborated with front-end developers on Angular integration.
+
+Skills
+----------------------------------
+C#, ASP.NET Core, MVC, Web API, LINQ, SQL Server, AWS, Angular, Git
+
+Education
+----------------------------------
+B.Sc. in Computer Science & Engineering  
+BRAC University, Bangladesh  
+2019

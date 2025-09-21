@@ -54,76 +54,59 @@ def save_candidate(Name, email, phone, experience, total_score, skills, summary_
     conn.close()
     return True  # Successfully saved
 
-def get_all_candidates():
+
+
+def get_candidates_count(category_id=0):
     """
-    Fetch all candidates from the database.
-    Returns a list of dictionaries with candidate info.
+    Returns total number of candidates.
+    If category_id=0, returns count for all categories.
     """
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("""
-        SELECT Candidate, Email, Contact, Experience, TotalScore, Skills, SummaryText, CategoryId
-        FROM candidates
-    """)
+    
+    if category_id == 0:
+        cursor.execute("SELECT COUNT(*) as count FROM candidates")
+    else:
+        cursor.execute("SELECT COUNT(*) as count FROM candidates WHERE CategoryId = ?", (category_id,))
+    
+    result = cursor.fetchone()
+    conn.close()
+    return result["count"] if result else 0
+
+# ----------------- Get Paginated Candidates -----------------
+def get_candidates_paginated(category_id=0, per_page=5, offset=0):
+    """
+    Returns a list of candidates for given category with pagination.
+    category_id=0 means all categories.
+    per_page = number of records per page
+    offset = number of records to skip
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    
+    if category_id == 0:
+        cursor.execute(
+            "SELECT * FROM candidates ORDER BY TotalScore DESC LIMIT ? OFFSET ?",
+            (per_page, offset)
+        )
+    else:
+        cursor.execute(
+            "SELECT * FROM candidates WHERE CategoryId = ? ORDER BY TotalScore DESC LIMIT ? OFFSET ?",
+            (category_id, per_page, offset)
+        )
+    
     rows = cursor.fetchall()
     conn.close()
-
-    # Convert to list of dicts
-    candidates = []
-    for row in rows:
-        candidates.append({
-            "Candidate": row[0],
-            "Email": row[1],
-            "Contact": row[2],
-            "Experience": row[3],
-            "TotalScore": row[4],
-            "Skills": row[5].split(",") if row[5] else [],  # Assuming skills stored as comma-separated string
-            "SummaryText": row[6],
-            "CategoryId": row[7]
-        })
+    
+    # Convert sqlite3.Row objects to dicts
+    candidates = [dict(row) for row in rows]
     return candidates
 
-
-
-def get_candidates_paginated(category_id=None, limit=5, offset=0):
+# ----------------- Get All Candidates (no pagination) -----------------
+def get_all_candidates():
     conn = get_connection()
-    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-
-    if category_id:
-        cursor.execute("""
-            SELECT rowid, * FROM candidates
-            WHERE category_id = ?
-            ORDER BY TotalScore DESC
-            LIMIT ? OFFSET ?
-        """, (category_id, limit, offset))
-    else:
-        cursor.execute("""
-            SELECT rowid, * FROM candidates
-            ORDER BY TotalScore DESC
-            LIMIT ? OFFSET ?
-        """, (limit, offset))
-
+    cursor.execute("SELECT * FROM candidates ORDER BY TotalScore DESC")
     rows = cursor.fetchall()
     conn.close()
     return [dict(row) for row in rows]
-
-
-
-def get_candidates_count(category_id=None):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    if category_id:
-        cursor.execute("SELECT COUNT(*) FROM candidates WHERE category_id = ?", (category_id,))
-    else:
-        cursor.execute("SELECT COUNT(*) FROM candidates")
-
-    count = cursor.fetchone()[0]
-    conn.close()
-    return count
-
-
-
-
-

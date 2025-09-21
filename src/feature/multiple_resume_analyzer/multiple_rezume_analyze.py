@@ -32,7 +32,7 @@ def multiple_resume_analysis():
         st.rerun()
 
     # UI
-    st.title("📄 Resume Analyzer (HireAI)")
+    st.title("📄Multiple Resume Analyzer (HireAI)")
     # Get categories and selected category
     # categories = get_categories()
     # selected_category = st.selectbox("Select Job Requirement Category", ["All"] + categories)

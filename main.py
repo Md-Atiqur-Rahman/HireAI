@@ -1,123 +1,74 @@
-
+import streamlit as st
 from src.feature.dashboards.test_dasboard import test_dashboard_page
 from src.feature.dashboards.dashboard import dashboard_page
 from src.feature.multiple_resume_analyzer.multiple_rezume_analyze import multiple_resume_analysis
-from src.database.db_job_category import create_category_table
-from src.database.db_config import drop_table
-from src.database.db_candidates import create_candidates_table
-from src.database.db_job_requirements import create_job_requirements_table
-from src.Admin.job_category_page import job_category_page
-from src.Admin.job_requirment import job_requirements_page
-
-# In main.py or upload_resume.py
 from src.feature.resume_analyzer.single_resume_analyzer import resume_uploader
+from src.Admin.job_category_page import job_category_page
 
-# drop_table("job_requirements")
-# drop_table("job_categories")
+st.set_page_config(page_title="Hire AI", page_icon="🚀", layout="wide")
 
-create_job_requirements_table()
-create_candidates_table()
-create_category_table()
-
-import streamlit as st
-
-# Sidebar navigation
-from streamlit_option_menu import option_menu
-import streamlit as st
-
-st.set_page_config(
-    page_title="Smart Resume AI",
-    page_icon="🚀",
-    layout="wide"
-)
-
-# --- Session State ---
+# Initialize session state
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# --- CUSTOM CSS ---
+# Sidebar CSS
 st.markdown("""
-    <style>
-    [data-testid="stSidebar"] {
-        background-color: #1e1e2f;
-        padding: 20px 10px;
-    }
+<style>
+[data-testid="stSidebar"] {
+    background-color: #1e1e2f;
+    padding: 20px 10px;
+}
+.sidebar-logo {text-align:center;margin-bottom:20px;}
+.sidebar-title {font-size:22px;font-weight:bold;text-align:center;color:#5dade2;margin-bottom:25px;}
 
-    .sidebar-logo {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-    .sidebar-title {
-        font-size: 22px;
-        font-weight: bold;
-        text-align: center;
-        color: #5dade2;
-        margin-bottom: 25px;
-    }
-
-    .menu-button {
-        display: block;
-        width: 100%;
-        height: 50px;
-        text-align: left;
-        padding: 10px 18px;
-        margin: 8px 0;
-        border-radius: 12px;
-        font-size: 16px;
-        font-weight: 600;
-        color: white;
-        background: linear-gradient(90deg, #3498db, #5dade2);
-        border: none;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-
-    .menu-button:hover {
-        background: linear-gradient(90deg, #1abc9c, #16a085);
-    }
-
-    .menu-button.active {
-        background: linear-gradient(90deg, #1abc9c, #16a085) !important;
-        box-shadow: 0 0 10px rgba(0, 255, 200, 0.5);
-    }
-    </style>
+/* Make all buttons same size */
+.stButton>button {
+    width: 200px !important; /* fixed width */
+    height: 50px !important; /* fixed height */
+    margin: 8px 0 !important;
+    border-radius: 12px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    text-align: left;
+    color: white !important;
+    background: linear-gradient(90deg, #3498db, #5dade2) !important;
+    border: none !important;
+    transition: 0.3s !important;
+}
+.stButton>button:hover {
+    background: linear-gradient(90deg, #1abc9c, #16a085) !important;
+}
+</style>
 """, unsafe_allow_html=True)
 
-# --- Sidebar ---
+# Sidebar menu
 with st.sidebar:
-    st.markdown(
-        '<div class="sidebar-logo"><img src="https://cdn-icons-png.flaticon.com/512/1995/1995574.png" width="120"></div>',
-        unsafe_allow_html=True
-    )
-    st.markdown('<div class="sidebar-title">Smart Resume AI</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-logo"><img src="https://cdn-icons-png.flaticon.com/512/1995/1995574.png" width="120"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-title">Hire AI</div>', unsafe_allow_html=True)
 
-    def menu_button(label, page_name, icon):
-        active_class = "active" if st.session_state.page == page_name else ""
-        if st.markdown(f"""
-            <button class="menu-button {active_class}" onclick="window.parent.streamlitSetPage('{page_name}')">
-                {icon} {label}
-            </button>
-            """, unsafe_allow_html=True):
-            pass  # just rendering the button
+    menu_items = {
+        "🏠 HOME": "home",
+        "🔍 RESUME ANALYZER": "analyzer",
+        "📝 RESUME BUILDER": "builder",
+        "📊 DASHBOARD": "dashboard",
+        "🎯 JOB SEARCH": "jobs"
+    }
 
-    # Menu Buttons
-    menu_button("HOME", "home", "🏠")
-    menu_button("RESUME ANALYZER", "analyzer", "🔍")
-    menu_button("RESUME BUILDER", "builder", "📝")
-    menu_button("DASHBOARD", "dashboard", "📊")
-    menu_button("JOB SEARCH", "jobs", "🎯")
+    for label, page_name in menu_items.items():
+        btn_key = f"btn_{page_name}"
+        clicked = st.button(label, key=btn_key)
+        if clicked:
+            st.session_state.page = page_name
 
-# --- Page Routing ---
+# Page routing
 page = st.session_state.page
-
 if page == "home":
-    dashboard_page()
+    test_dashboard_page()
 elif page == "analyzer":
     resume_uploader()
 elif page == "builder":
-    st.title("📝 Resume Builder")
+    multiple_resume_analysis()
 elif page == "dashboard":
-    st.title("📊 Dashboard")
+    dashboard_page()
 elif page == "jobs":
-    st.title("🎯 Job Search")
+    job_category_page()

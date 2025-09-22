@@ -226,9 +226,10 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
         # Extract required skills from requirement (text after "in" or after years)
         skills_part = re.split(r"experience in|with experience in|experience with", requirement, flags=re.IGNORECASE)[-1]
         required_skills = [s.strip() for s in re.split(r"[,/|]", skills_part) if s.strip()]
-        
+
         # Check skills with SBERT similarity
         matched, missing = [], []
+        skills_ok = True
         if required_skills:
             req_embs = sbert_model.encode(required_skills, convert_to_tensor=True)
             cand_embs = sbert_model.encode(list(resume_keywords), convert_to_tensor=True)
@@ -239,17 +240,24 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
                 else:
                     missing.append(req)
             skills_ok = len(matched) / len(required_skills) >= 0.5
-        else:
-            skills_ok = True  # no skills required
 
         # Final status: only if BOTH experience and skills are ok
         status = "✅ Match" if exp_ok and skills_ok else "❌ Missing"
-        experience_check = f"Requirement: {requirement}, Candidate: {total_years} years"
+
+        # Build reason string
+        if not exp_ok and not skills_ok:
+            reason = f"User has {total_years} years and no {', '.join(missing)} mentioned"
+        elif not exp_ok:
+            reason = f"User has {total_years} years"
+        elif not skills_ok:
+            reason = f"User has {total_years} years and no {', '.join(missing)} mentioned"
+        else:
+            reason = f"User has {total_years} years"
 
         return {
             "requirement": requirement,
             "status": status,
-            "experience_check": experience_check,
+            "experience_check": reason,
             "matched_keywords": matched,
             "missing_keywords": missing,
             "exp_ok": exp_ok,
@@ -363,9 +371,9 @@ def summarize_results(results):
         if status.startswith("✅"):
             earned_weight += weight
             if cat == "Experience" and "experience_check" in r:
-                reason = r["experience_check"].split("Candidate: ")[1]
-                matched.append(f"{req} (User has {reason})")
-            elif cat == "TechnicalSkills" and r.get("matched_keywords"):
+                reason = r["experience_check"]
+                matched.append(f"{req} ({reason})")
+            elif cat in ["TechnicalSkills", "Skills"] and r.get("matched_keywords"):
                 matched.append(f"{req} (Matched: {', '.join(r['matched_keywords'])})")
                 matched_skills.extend(r['matched_keywords'])
             else:
@@ -377,8 +385,8 @@ def summarize_results(results):
                 fail_due_to_critical = True  # only these can cause FAIL
 
             if cat == "Experience" and "experience_check" in r:
-                reason = r["experience_check"].split("Candidate: ")[1]
-                missing.append(f"{req} (User has {reason})")
+                reason = r["experience_check"]
+                missing.append(f"{req} ({reason})")
             elif cat == "Education":
                 missing.append(f"{req} (No degree mentioned)")
             elif cat in ["TechnicalSkills", "Skills"]:
@@ -392,10 +400,10 @@ def summarize_results(results):
 
     # --- Score Calculation ---
     overall_score = round((earned_weight / total_weight) * 100, 1) if total_weight > 0 else 0
-    if fail_due_to_critical:
-        overall_score_display = "FAIL (Critical experience or technical skill missing)"
-    else:
-        overall_score_display = f"{overall_score}%"
+    overall_score_display = (
+        "FAIL (Critical experience or technical skill missing)"
+        if fail_due_to_critical else f"{overall_score}%"
+    )
 
     matched_skills = sorted(set(matched_skills))
     missing_skills = sorted(set(missing_skills))

@@ -233,6 +233,8 @@ def multiple_resume_analysis():
         if isinstance(candidate, pd.Series):
             candidate = candidate.to_dict()
             st.session_state.selected_candidate = candidate
+        if not isinstance(candidate, dict):
+            candidate = {"Candidate": str(candidate)}
 
         # Use .get() to avoid KeyError
         candidate_name = candidate.get("Candidate", "Unknown Candidate")

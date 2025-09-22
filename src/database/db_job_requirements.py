@@ -18,47 +18,41 @@ def create_job_requirements_table():
     conn.close()
 
 
-
-def save_job_requirement(category_id, reqs):
+# ---------------- Save Job Requirement ----------------
+def save_job_requirement(category_id, requirements_dict):
+    print(json.dumps(requirements_dict))
     """
-    Save a list of requirements for a category.
-    Appends new requirements to existing ones if category exists.
+    Save or update full requirements JSON for a category.
+    requirements_dict should be a dict with Experience, Education, etc.
     """
-    if isinstance(reqs, str):
-        reqs = [reqs]
-
     conn = get_connection()
     cursor = conn.cursor()
 
-    # Check if category already exists
-    cursor.execute("SELECT requirements FROM job_requirements WHERE category_id=?", (category_id,))
+    # Check if requirements already exist for this category
+    cursor.execute("SELECT id FROM job_requirements WHERE category_id=?", (category_id,))
     row = cursor.fetchone()
 
-    if row and row[0]:
-        # Load existing requirements and append new ones
-        existing_reqs = json.loads(row[0])
-        combined_reqs = existing_reqs + reqs
+    if row:
+        # Update existing
         cursor.execute(
             "UPDATE job_requirements SET requirements=? WHERE category_id=?",
-            (json.dumps(combined_reqs), category_id)
+            (json.dumps(requirements_dict), category_id)
         )
     else:
-        # Insert new row
+        # Insert new
         cursor.execute(
             "INSERT INTO job_requirements (category_id, requirements) VALUES (?, ?)",
-            (category_id, json.dumps(reqs))
+            (category_id, json.dumps(requirements_dict))
         )
 
     conn.commit()
     conn.close()
 
 
-
-
 def get_requirements_by_category(category_id):
     """
-    Fetch all requirements for a given category.
-    Returns a Python list of strings.
+    Fetch requirements JSON for a given category.
+    Returns a dict (empty if none).
     """
     conn = get_connection()
     cursor = conn.cursor()
@@ -68,7 +62,13 @@ def get_requirements_by_category(category_id):
 
     if row and row[0]:
         return json.loads(row[0])
-    return []
+    return {
+        "Experience": "",
+        "Education": "",
+        "TechnicalSkills": "",
+        "Others": ""
+    }
+
 
 
 

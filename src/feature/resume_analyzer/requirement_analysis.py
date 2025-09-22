@@ -189,7 +189,12 @@ def evaluate_resume(resume_text, job_requirements):
 
 
 def summarize_results(results):
-    # Assign weights (higher for experience & education, lower for skills)
+    """
+    Returns overall score and detailed summary showing:
+    - Met requirements with concise reason
+    - Missing requirements with human-readable reason
+    """
+    # Assign weights
     weights = {
         "experience": 3,
         "education": 2,
@@ -203,13 +208,14 @@ def summarize_results(results):
     missing = []
 
     for r in results:
-        req = r["requirement"].lower()
+        req = r["requirement"]
         status = r["status"]
 
-        # Figure out category
-        if "year" in req or "experience" in req:
+        # Determine category
+        req_lower = req.lower()
+        if "year" in req_lower or "experience" in req_lower:
             category = "experience"
-        elif "degree" in req or "bachelor" in req or "master" in req:
+        elif "degree" in req_lower or "bachelor" in req_lower or "master" in req_lower:
             category = "education"
         else:
             category = "skills"
@@ -219,19 +225,38 @@ def summarize_results(results):
 
         if status.startswith("✅"):
             earned_weight += weight
-            matched.append(r["requirement"])
+            # ✅ Met requirements
+            if category == "experience" and "experience_check" in r:
+                reason = r["experience_check"].split("Candidate: ")[1]
+                matched.append(f"{req} (User has {reason})")
+            elif r.get("matched_keywords"):
+                matched.append(f"{req} (Matched: {', '.join(r['matched_keywords'])})")
+            else:
+                matched.append(f"{req} (Met)")
         else:
-            missing.append(r["requirement"])
+            # ⚠️ Missing requirements
+            if category == "experience" and "experience_check" in r:
+                reason = r["experience_check"].split("Candidate: ")[1]
+                missing.append(f"{req} (User has {reason})")
+            elif category == "education":
+                missing.append(f"{req} (No bachelor's degree mentioned)")
+            elif category == "skills":
+                if r.get("missing_keywords"):
+                    missing.append(f"{req} (No {', '.join(r['missing_keywords'])} mentioned)")
+                else:
+                    missing.append(f"{req} (Not mentioned)")
+            else:
+                missing.append(f"{req} (Not mentioned)")
 
     overall_score = round((earned_weight / total_weight) * 100, 1) if total_weight > 0 else 0
 
-    # Build LinkedIn-style summary with actual newlines
+    # Build detailed summary
     lines = [
         "📊 Summary:",
-        f"\n✅ Matches {len(matched)} of {len(results)} required qualifications",
-        f"\n📌 Matches Requirements:\n   ✅ " + "\n   ✅ ".join(matched) if matched else "📌 Strong in: None",
+        f"✅ Matches {len(matched)} of {len(results)} required qualifications",
+        f"\n📌 Met Requirements:\n   ✅ " + "\n   ✅ ".join(matched) if matched else "📌 Strong in: None",
         f"\n⚠️ Missing Requirements:\n   ❌ " + "\n   ❌ ".join(missing) if missing else "⚠️ Missing: None",
         f"\n🔢 Score: {overall_score}%"
     ]
-    
-    return overall_score,"\n".join(lines)
+
+    return overall_score, "\n".join(lines)

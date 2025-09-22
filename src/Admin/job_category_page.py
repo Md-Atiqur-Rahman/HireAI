@@ -32,3 +32,5 @@ def job_category_page():
             st.write(f"{i}. {cat['name']}")
     else:
         st.info("No job categories found yet.")
+    
+

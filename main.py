@@ -1,4 +1,5 @@
 import streamlit as st
+from src.feature.home import home_page
 from src.Admin.job_requirment import job_requirements_page
 from src.feature.dashboards.test_dasboard import test_dashboard_page
 from src.feature.dashboards.dashboard import dashboard_page
@@ -6,11 +7,14 @@ from src.feature.multiple_resume_analyzer.multiple_rezume_analyze import multipl
 from src.feature.resume_analyzer.single_resume_analyzer import resume_uploader
 from src.Admin.job_category_page import job_category_page
 
+import sys, os
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
 st.set_page_config(page_title="Hire AI", page_icon="https://cdn-icons-png.flaticon.com/512/3135/3135714.png", layout="wide")
 
 # Initialize session state
 if "page" not in st.session_state:
-    st.session_state.page = "dashboard"
+    st.session_state.page = "home"
 
 # Sidebar CSS
 st.markdown("""
@@ -48,13 +52,13 @@ with st.sidebar:
     st.markdown('<div class="sidebar-title">Hire AI</div>', unsafe_allow_html=True)
 
     menu_items = {
-        "📊 DASHBOARD": "dashboard",             # Dashboard overview
-        "🔍 RESUME ANALYZER": "analyzer",        # Analyze a single resume
-        "🗂️ All RESUME ANALYZER": "allanalyzer", # Analyze multiple resumes
-        "➕ Add Requirements": "JobRequirements", # Add new job requirements
-        "🏷️ Add Categories": "JobCategories"     # Add new job categories
-    }
-
+    "🏠 Home": "home",                        # Home page
+    "📄 Resume Analyzer": "analyzer",         # Analyze a single resume
+    "🔍 All Resumes Analyzer": "allanalyzer", # Analyze multiple resumes
+    "📊 Dashboard": "dashboard",              # Dashboard overview
+    "📝 Add Requirements": "JobRequirements", # Add new job requirements
+    "📂 Add Categories": "JobCategories"      # Add new job categories
+}
 
     for label, page_name in menu_items.items():
         btn_key = f"btn_{page_name}"
@@ -64,14 +68,36 @@ with st.sidebar:
 
 # Page routing
 page = st.session_state.page
-if page == "dashboard":
-    test_dashboard_page()
-    # dashboard_page()
+if page == "home":
+    home_page()
 elif page == "analyzer":
     resume_uploader()
 elif page == "allanalyzer":
     multiple_resume_analysis()
+elif page == "dashboard":
+    dashboard_page()
 elif page == "JobRequirements":
     job_requirements_page()
 elif page == "JobCategories":
     job_category_page()
+
+
+# add_submitted_on_column()
+# update_submitted_on(10, "2025-08-03")
+
+# update_submitted_on(11, "2025-08-10")
+# update_submitted_on(12, "2025-08-10")
+
+# update_submitted_on(13, "2025-08-17")
+# update_submitted_on(14, "2025-08-17")
+# update_submitted_on(15, "2025-08-17")
+
+# update_submitted_on(16, "2025-08-24")
+# update_submitted_on(17, "2025-08-24")
+# update_submitted_on(18, "2025-08-24")
+# update_submitted_on(19, "2025-08-24")
+# update_submitted_on(20, "2025-08-24")
+
+# update_submitted_on(21, "2025-08-31")
+# update_submitted_on(22, "2025-08-31")
+# update_submitted_on(23, "2025-08-31")

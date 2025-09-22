@@ -37,3 +37,5 @@ def delete_job_requirements():
     cursor.execute("DELETE FROM job_requirements;")
     conn.commit()
     conn.close()
+
+

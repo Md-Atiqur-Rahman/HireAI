@@ -1,13 +1,14 @@
 import streamlit as st
 
+def banner_style(title, last_updated=""):
+    timestamp_html = f'<div class="header-timestamp">Last updated: {last_updated}</div>' if last_updated else ""
 
-def banner_style(title):
     st.markdown(f"""
     <style>
     .header-banner {{
         background-color: #2e3b70;  /* dark blue background */
         border-radius: 15px;
-        padding: 15px 20px;
+        padding: 80px 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -42,5 +43,6 @@ def banner_style(title):
             <img src="https://cdn-icons-png.flaticon.com/512/3135/3135714.png" alt="icon">
             <div class="header-title">{title}</div>
         </div>
+        {timestamp_html}
     </div>
     """, unsafe_allow_html=True)

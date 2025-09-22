@@ -1,57 +1,19 @@
+from collections import Counter
 from datetime import datetime
+import json
+import random
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from src.database.db_candidates import get_candidates_count, get_candidates_paginated
+import plotly.graph_objects as go
+from src.Helper.banner_style import banner_style
+from src.database.db_candidates import get_average_score, get_candidates_count, get_candidates_group_by_category, get_candidates_paginated, get_skills_by_category, get_top_candidate, get_total_categories, get_weekly_submissions
 from src.database.db_job_category import get_all_categories
 
 def dashboard_page():
     # st.title("📊 Resume Analysis Dashboard (HireAI)")
     last_updated = datetime.now().strftime("%B %d, %Y %I:%M %p")
-
-    st.markdown(f"""
-    <style>
-    .header-banner {{
-        background-color: #2e3b70;  /* dark blue background */
-        border-radius: 15px;
-        padding: 15px 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        color: #7fd3c7;
-        margin-bottom: 20px;
-    }}
-
-    .header-left {{
-        display: flex;
-        align-items: center;
-    }}
-
-    .header-left img {{
-        width: 50px;
-        height: 50px;
-        margin-right: 15px;
-        border-radius: 10px;
-    }}
-
-    .header-title {{
-        font-size: 28px;
-        font-weight: 600;
-    }}
-    .header-timestamp {{
-        font-size: 14px;
-        color: #cce0e0;
-    }}
-    </style>
-
-    <div class="header-banner">
-        <div class="header-left">
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135714.png" alt="icon">
-            <div class="header-title">Resume Analytics Dashboard</div>
-        </div>
-        <div class="header-timestamp">Last updated: {last_updated}</div>
-    </div>
-    """, unsafe_allow_html=True)
+    banner_style("Resume Analytics Dashboard", last_updated)
     # --- Session State Initialization ---
     if "current_page" not in st.session_state:
         st.session_state.current_page = 1
@@ -67,6 +29,7 @@ def dashboard_page():
         selected_category_id = category_dict[selected_category_name]
 
     # --- Pagination Setup ---
+    # print(selected_category_id)
     per_page = 5
     total_records = get_candidates_count(selected_category_id)
     total_pages = (total_records // per_page) + (1 if total_records % per_page else 0)
@@ -82,44 +45,176 @@ def dashboard_page():
     # --- Add Rank Column ---
     df["Rank"] = range(offset + 1, offset + len(df) + 1)
     
-    # Create 3 columns: left empty, center for chart, right empty
-    col1, col2, col3 = st.columns([1, 2, 1])  # center column wider
 
+    # --- KPI Cards with Border ---
+    avg_score = get_average_score(selected_category_id)
+    top_candidate = get_top_candidate(selected_category_id)
+    total_categories = get_total_categories(selected_category_id)
+
+    st.subheader("🔑 Key Metrics")
+
+    kpi_html = f"""
+    <style>
+    .kpi-container {{
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }}
+    .kpi-card {{
+        flex: 1;
+        background-color: #2e3b70;
+        border: 2px solid #2e3b70;
+        color: #cce0e0;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+    }}
+    .kpi-title {{
+        font-size: 18px;
+        font-weight: 600;
+        color:  #cce0e0;
+    }}
+    .kpi-value {{
+        font-size: 28px;
+        font-weight: 700;
+        margin-top: 10px;
+        color:  #cce0e0;
+    }}
+    </style>
+
+    <div class="kpi-container">
+        <div class="kpi-card">
+            <div class="kpi-title">Total Resumes</div>
+            <div class="kpi-value">{total_records}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Average Score</div>
+            <div class="kpi-value">{avg_score:.1f}%</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Top Candidate</div>
+            <div class="kpi-value">{top_candidate['name']}</div>
+        </div>
+        <div class="kpi-card">
+            <div class="kpi-title">Job Categories</div>
+            <div class="kpi-value">{total_categories}</div>
+        </div>
+    </div>
+    """
+
+    st.markdown(kpi_html, unsafe_allow_html=True)
+
+    col1, col2 = st.columns([2, 2])  # center column wider
+
+    with col1:
+    # --- Candidates per Category ---
+        st.subheader("🏷️ Candidates per Category")
+        df_cat = pd.DataFrame(get_candidates_group_by_category(selected_category_id), columns=["CategoryName", "total_candidates"])
+        fig_cat = px.pie(df_cat, names="CategoryName", values="total_candidates")
+        st.plotly_chart(fig_cat, use_container_width=True)
     with col2:
-        st.subheader("📈 Total Resumes Analyzed")
-        
-        fig_total = px.pie(
-            names=["Resumes Analyzed"], 
-            values=[total_records], 
-            hole=0.4,  # Bigger hole = smaller circle
-        )
+            # --- Top Candidates Bar Chart ---
+        st.subheader("🏆 Top Candidates by Score")
+        top_df = df.sort_values(by="TotalScore", ascending=False)
+        fig_top = px.bar(top_df, x="Candidate", y="TotalScore", color="TotalScore")
+        st.plotly_chart(fig_top, use_container_width=True)
 
-        # Hide text labels on slices
-        fig_total.update_traces(
-            textinfo='none', 
-            marker_colors=['#636EFA']  # Optional color
-        )
+    col1, col2 = st.columns([2, 2])  # center column wider 
 
-        # Add bold annotation in the middle
-        fig_total.update_layout(
-            showlegend=False,
-            margin=dict(t=0, b=0, l=0, r=0),
-            width=300,  # Smaller width
-            height=300,  # Smaller height
-            annotations=[dict(
-                text=f"<b>{total_records}</b>",  # Bold
-                x=0.5, y=0.5,  # Center
-                font=dict(size=30, color="black"),
-                showarrow=False
+    with col1:
+        # Example selected skills
+        skills_list = get_skills_by_category(selected_category_id)
+
+        # Optional: show only selected skills
+        selected_skills = ["c#", "net", "python", "angular", "javascript"]
+        skills_list = [skill for skill in skills_list if skill in selected_skills]
+
+        # Count frequency
+        skill_counts = Counter(skills_list)
+
+        if not skill_counts:
+            st.warning("No skills found for this category.")
+            return
+
+        # Dynamic colors
+        def random_color():
+            return f'rgb({random.randint(0,255)}, {random.randint(0,255)}, {random.randint(0,255)})'
+
+        colors = [random_color() for _ in skill_counts]
+
+        # Plotly bar chart
+        fig = go.Figure(
+            data=[go.Bar(
+                x=list(skill_counts.keys()),
+                y=list(skill_counts.values()),
+                marker_color=colors
             )]
         )
+        fig.update_layout(title_text="Top Selected Skills", xaxis_title="Skill", yaxis_title="Count")
 
-        st.plotly_chart(fig_total, use_container_width=False)
+        st.plotly_chart(fig, use_container_width=True)
+
+
+
+    
+    with col2:
+        # ---------------- Weekly Submission Pattern ----------------
+        # Aggregate submissions per day
+
+    # Select category
+
+        # Fetch weekly submissions
+        weekly_data = get_weekly_submissions(selected_category_id)
+        df_weekly = pd.DataFrame(weekly_data)
+
+        # Plot line chart
+        fig = px.line(
+            df_weekly,
+            x="SubmittedOn",
+            y="Submissions",
+            markers=True,
+            title="Weekly Submission Pattern"
+        )
+
+        fig.update_layout(
+            xaxis_title="Date",
+            yaxis_title="Number of Submissions",
+            template="plotly_dark"
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    col1, col2 = st.columns([2, 2])  # center column wider 
+    with col1:
+        # --- Candidate Score Distribution ---
+        st.subheader("📈 Candidate Score Distribution")
+        fig_score = px.histogram(df, x="TotalScore", nbins=10, title="Score Distribution")
+        st.plotly_chart(fig_score, use_container_width=True)
+    with col2:
+        # --- Experience vs Score Scatter ---
+        st.subheader("📊 Experience vs Score")
+        categories = get_all_categories()
+        categories_map = {c["id"]: c["name"] for c in categories}  # {id: name}
+
+        # Add Category name column to your DataFrame
+        df["Category"] = df["CategoryId"].map(categories_map)
+
+        # Now your scatter plot can use 'Category' for color
+        fig_exp = px.scatter(
+            df,
+            x="Experience",
+            y="TotalScore",
+            color="Category",  # now exists in df
+            hover_data=["Candidate"]
+        )
+
+        st.plotly_chart(fig_exp, use_container_width=True)
 
     # --- Score Comparison Chart ---
-    st.subheader("📊 Score Comparison")
-    fig = px.bar(df, x="Candidate", y="TotalScore", color="Candidate", title="Score per Candidate")
-    st.plotly_chart(fig)
+    # st.subheader("📊 Score Comparison")
+    # fig = px.bar(df, x="Candidate", y="TotalScore", color="Candidate", title="Score per Candidate")
+    # st.plotly_chart(fig)
 
     # --- Table Header ---
     st.subheader("🏆 Ranked Candidates by Score")
@@ -160,16 +255,20 @@ def dashboard_page():
                 st.text(row.get('SummaryText', '-'))
 
   
-    # --- Pagination Controls ---
     col1, col2, col3 = st.columns([1, 2, 1])
+
     with col1:
-        if st.button("⬅️ Previous") and st.session_state.current_page > 1:
-            st.session_state.current_page -= 1
-            st.rerun()
+        if st.session_state.current_page > 1:  # Only show Previous if not first page
+            if st.button("⬅️ Previous"):
+                st.session_state.current_page -= 1
+                st.rerun()
+
     with col3:
-        if st.button("Next ➡️") and st.session_state.current_page < total_pages:
-            st.session_state.current_page += 1
-            st.rerun()
+        if st.session_state.current_page < total_pages:  # Only show Next if not last page
+            if st.button("Next ➡️"):
+                st.session_state.current_page += 1
+                st.rerun()
+
     st.text(f"Page {st.session_state.current_page} of {total_pages}")
 
     # --- Download CSV ---

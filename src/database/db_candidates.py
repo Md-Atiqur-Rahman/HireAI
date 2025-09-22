@@ -127,7 +127,7 @@ def get_candidates_count(category_id=0):
     """
     conn = get_connection()
     cursor = conn.cursor()
-    print("get_candidates_count:",category_id)
+    #print("get_candidates_count:",category_id)
     if category_id == 0:
         cursor.execute("SELECT COUNT(*) as count FROM candidates")
     else:
@@ -147,7 +147,7 @@ def get_candidates_paginated(category_id=0, per_page=5, offset=0):
     """
     conn = get_connection()
     cursor = conn.cursor()
-    print("get_tget_candidates_paginatedotal_categories:",category_id)
+    #print("get_tget_candidates_paginatedotal_categories:",category_id)
     if category_id == 0:
         cursor.execute(
             "SELECT * FROM candidates ORDER BY TotalScore DESC LIMIT ? OFFSET ?",
@@ -183,7 +183,7 @@ def get_total_categories(category_id=0):
     """
     conn = get_connection()
     cursor = conn.cursor()
-    print("get_total_categories:",category_id)
+    #print("get_total_categories:",category_id)
     if category_id == 0:
         cursor.execute("SELECT COUNT(DISTINCT CategoryId) as count FROM candidates")
     else:
@@ -201,7 +201,7 @@ def get_candidates_group_by_category(category_id=0):
     """
     conn = get_connection()
     cursor = conn.cursor()
-    print("get_candidates_group_by_category:",category_id)
+    #print("get_candidates_group_by_category:",category_id)
     if category_id == 0:
         query = """
         SELECT jc.name AS CategoryName, COUNT(c.id) AS total_candidates
@@ -232,7 +232,7 @@ def get_average_score(category_id=0):
     """
     conn = get_connection()
     cursor = conn.cursor()
-    print("get_average_score:",category_id)
+    #print("get_average_score:",category_id)
     if category_id == 0:
         cursor.execute("SELECT AVG(TotalScore) as avg_score FROM candidates")
     else:
@@ -250,7 +250,7 @@ def get_top_candidate(category_id=0):
     """
     conn = get_connection()
     cursor = conn.cursor()
-    print("get_top_candidate",category_id)
+    #print("get_top_candidate",category_id)
     if category_id == 0:
         cursor.execute("SELECT id, Candidate, TotalScore FROM candidates ORDER BY TotalScore DESC LIMIT 1")
     else:
@@ -271,7 +271,7 @@ def get_top_candidate(category_id=0):
 def get_skills_by_category(category_id=0):
     conn = get_connection()
     cursor = conn.cursor()
-    print("get_skills_by_category",category_id)
+    #print("get_skills_by_category",category_id)
 
     if category_id == 0:
         # All categories
@@ -295,7 +295,7 @@ def get_skills_by_category(category_id=0):
 def get_weekly_submissions(category_id=0):
     conn = get_connection()
     cursor = conn.cursor()
-    print("get_weekly_submissions",category_id)
+    #print("get_weekly_submissions",category_id)
     if category_id == 0:
         # All categories
         cursor.execute("""

@@ -108,6 +108,7 @@ def multiple_resume_analysis():
             phone = extract_phone(resume_text)
             name =extract_name_from_text(resume_text,email)
             skills = extract_skills_tfidf(resume_text,st.session_state.jd_text)
+            print("skills---->",skills)
             summary_text, total_exp, total_score = evaluate_resume(resume_text, st.session_state.jd_file)
             experience = total_exp
             total_score = total_score
@@ -225,12 +226,25 @@ def multiple_resume_analysis():
             )
 
     # 📄 Detailed Section (Toggleable)
-        if st.session_state.selected_candidate is not None:
-            candidate = st.session_state.selected_candidate
-            with resume_analysis_container.container():
-                st.subheader(f"📄 Analysis for {candidate.get('Candidate', 'Unknown')}")
-                with st.expander("📋 Detailed Analysis", expanded=True):
-                    st.write(f"**Score (%):** {candidate['TotalScore']}")
-                    st.text(candidate['SummaryText']) 
-                if st.button("❌ Close Details"):
-                    st.session_state.selected_candidate = None
+    if st.session_state.selected_candidate is not None:
+        candidate = st.session_state.selected_candidate
+
+        # If it's a Series, convert to dict
+        if isinstance(candidate, pd.Series):
+            candidate = candidate.to_dict()
+            st.session_state.selected_candidate = candidate
+
+        # Use .get() to avoid KeyError
+        candidate_name = candidate.get("Candidate", "Unknown Candidate")
+        candidate_score = candidate.get("TotalScore", 0)
+        candidate_summary = candidate.get("SummaryText", "")
+
+        with resume_analysis_container.container():
+            st.subheader(f"📄 Analysis for {candidate_name}")
+            with st.expander("📋 Detailed Analysis", expanded=True):
+                st.write(f"**Score (%):** {candidate_score}")
+                st.text(candidate_summary)
+
+            if st.button("❌ Close Details"):
+                st.session_state.selected_candidate = None
+

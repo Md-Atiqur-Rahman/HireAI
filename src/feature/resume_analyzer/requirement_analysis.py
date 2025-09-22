@@ -157,48 +157,55 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
     }
 
 # ===============================
-# Runner
+# Runner with Structured Requirements
 # ===============================
 def evaluate_resume(resume_text, job_requirements):
+    """
+    Evaluates resume against structured job requirements (dict).
+    """
     resume_sentences = [s.strip() for s in resume_text.split("\n") if s.strip()]
     resume_keywords = extract_keywords(resume_text)
 
-    results = [check_requirement(req, resume_sentences, resume_keywords, resume_text) for req in job_requirements]
+    results = []
 
-    # 🔹 Total work experience (years) from experience requirements
-    exp_results = [r for r in results if "experience_check" in r]
+    for category, requirement in job_requirements.items():
+        if not requirement.strip():
+            continue  # skip empty category
+        check = check_requirement(requirement, resume_sentences, resume_keywords, resume_text)
+        check["category"] = category  # track which category it belongs to
+        results.append(check)
+
+    # 🔹 Total work experience from experience requirements
+    exp_results = [r for r in results if r["category"].lower() == "experience"]
     total_experience = 0.0
     if exp_results:
-        # Take the total_years from the first experience requirement (assuming 1 main experience req)
-        # Or you could take max of all
         for r in exp_results:
-            match = re.search(r"Candidate:\s*([\d\.]+)\s*years", r["experience_check"])
-            if match:
-                total_experience = float(match.group(1))
-                break
+            if "experience_check" in r:
+                match = re.search(r"Candidate:\s*([\d\.]+)\s*years", r["experience_check"])
+                if match:
+                    total_experience = float(match.group(1))
+                    break
 
-    # 🔹 Summary like LinkedIn
-    met_count = sum(1 for r in results if r["status"].startswith("✅"))
-    total_count = len(results)
-    summary = f"Matches {met_count} of the {total_count} required qualifications"
-
-    # 🔹 Overall score
-    overall_score ,summary_text= summarize_results(results)
+    # 🔹 Get overall summary
+    overall_score, summary_text = summarize_results(results)
 
     return summary_text, total_experience, overall_score
 
 
+# ===============================
+# Improved Summarizer
+# ===============================
 def summarize_results(results):
     """
-    Returns overall score and detailed summary showing:
-    - Met requirements with concise reason
-    - Missing requirements with human-readable reason
+    Returns overall score and detailed summary grouped by category.
+    Fail only if Experience or TechnicalSkills are missing.
     """
-    # Assign weights
     weights = {
-        "experience": 3,
-        "education": 2,
-        "skills": 1
+        "Experience": 3,
+        "Education": 2,
+        "TechnicalSkills": 3,
+        "Skills": 1,
+        "Others": 1
     }
 
     total_weight = 0
@@ -206,57 +213,69 @@ def summarize_results(results):
 
     matched = []
     missing = []
+    matched_skills = []
+    missing_skills = []
+
+    fail_due_to_critical = False
 
     for r in results:
         req = r["requirement"]
         status = r["status"]
+        cat = r.get("category", "Other")
 
-        # Determine category
-        req_lower = req.lower()
-        if "year" in req_lower or "experience" in req_lower:
-            category = "experience"
-        elif "degree" in req_lower or "bachelor" in req_lower or "master" in req_lower:
-            category = "education"
-        else:
-            category = "skills"
-
-        weight = weights[category]
+        weight = weights.get(cat, 1)
         total_weight += weight
 
+        # --- Handle Met ---
         if status.startswith("✅"):
             earned_weight += weight
-            # ✅ Met requirements
-            if category == "experience" and "experience_check" in r:
+            if cat == "Experience" and "experience_check" in r:
                 reason = r["experience_check"].split("Candidate: ")[1]
                 matched.append(f"{req} (User has {reason})")
-            elif r.get("matched_keywords"):
+            elif cat == "TechnicalSkills" and r.get("matched_keywords"):
                 matched.append(f"{req} (Matched: {', '.join(r['matched_keywords'])})")
+                matched_skills.extend(r['matched_keywords'])
             else:
                 matched.append(f"{req} (Met)")
+
+        # --- Handle Missing ---
         else:
-            # ⚠️ Missing requirements
-            if category == "experience" and "experience_check" in r:
+            if cat in ["Experience", "TechnicalSkills"]:
+                fail_due_to_critical = True  # only these can cause FAIL
+
+            if cat == "Experience" and "experience_check" in r:
                 reason = r["experience_check"].split("Candidate: ")[1]
                 missing.append(f"{req} (User has {reason})")
-            elif category == "education":
-                missing.append(f"{req} (No bachelor's degree mentioned)")
-            elif category == "skills":
+            elif cat == "Education":
+                missing.append(f"{req} (No degree mentioned)")
+            elif cat in ["TechnicalSkills", "Skills"]:
                 if r.get("missing_keywords"):
                     missing.append(f"{req} (No {', '.join(r['missing_keywords'])} mentioned)")
+                    missing_skills.extend(r['missing_keywords'])
                 else:
                     missing.append(f"{req} (Not mentioned)")
             else:
                 missing.append(f"{req} (Not mentioned)")
 
+    # --- Score Calculation ---
     overall_score = round((earned_weight / total_weight) * 100, 1) if total_weight > 0 else 0
+    if fail_due_to_critical:
+        overall_score_display = "FAIL (Critical experience or technical skill missing)"
+    else:
+        overall_score_display = f"{overall_score}%"
 
-    # Build detailed summary
+    matched_skills = sorted(set(matched_skills))
+    missing_skills = sorted(set(missing_skills))
+
+    # --- Build Summary ---
     lines = [
         "📊 Summary:",
         f"✅ Matches {len(matched)} of {len(results)} required qualifications",
-        f"\n📌 Met Requirements:\n   ✅ " + "\n   ✅ ".join(matched) if matched else "📌 Strong in: None",
+        f"\n📌 Met Requirements:\n   ✅ " + "\n   ✅ ".join(matched) if matched else "📌 Met: None",
+        f"\n   Matched Skills: {', '.join(matched_skills)}" if matched_skills else "",
         f"\n⚠️ Missing Requirements:\n   ❌ " + "\n   ❌ ".join(missing) if missing else "⚠️ Missing: None",
-        f"\n🔢 Score: {overall_score}%"
+        f"\n   Missing Skills: {', '.join(missing_skills)}" if missing_skills else "",
+        f"\n🔢 Score: {overall_score_display}"
     ]
 
-    return overall_score, "\n".join(lines)
+    return overall_score, "\n".join([line for line in lines if line])

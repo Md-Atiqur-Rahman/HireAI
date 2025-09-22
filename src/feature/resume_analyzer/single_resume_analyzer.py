@@ -53,7 +53,14 @@ def resume_uploader():
             resume_text = extract_text_from_pdf(uploaded_file)
         else:
             resume_text = str(uploaded_file.read(), "utf-8")
-
+        job_requirements = {
+    "Experience": "Software Engineer with 3 years of experience in .Net / C#",
+    "Education": "Bachelor’s degree in Computer Science or Engineering",
+    "TechnicalSkills": "C#, ASP.NET Core, MVC, Web API, MS SQL",
+    "Skills": "Fluent in oral and written communication in English",
+    "Others": ""
+}
+        print("resume_text",resume_text)
         summary_text, total_exp, total_score = evaluate_resume(resume_text, job_requirements)
         email = extract_email(resume_text)
         phone = extract_phone(resume_text)

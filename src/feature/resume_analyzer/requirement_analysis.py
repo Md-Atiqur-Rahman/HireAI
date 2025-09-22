@@ -194,12 +194,14 @@ def evaluate_resume1(resume_text, job_requirements):
 def check_requirement(requirement, resume_sentences, resume_keywords, resume_text, category="Other"):
     """
     Enhanced requirement checker:
-    - For Experience: validates years + semantic similarity
-    - For TechnicalSkills: requires >=50% semantic match
+    - For Experience: validates years + skills (both must match)
+    - Skills must meet >=50% semantic match
+    - For TechnicalSkills: same semantic threshold
     - For others: SBERT + keyword match
     """
     # ---------- EXPERIENCE ----------
     if category.lower() == "experience" or "year" in requirement.lower():
+        # Extract min/max years
         range_match = re.search(r"(\d+)\s*-\s*(\d+)\s*years", requirement, re.IGNORECASE)
         single_match = re.search(r"(\d+)\+?\s*years", requirement, re.IGNORECASE)
 
@@ -209,24 +211,49 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
         elif single_match:
             min_years = int(single_match.group(1))
 
+        # Extract total years from resume
         _, total_years = extract_experience_entries(resume_text)
         if total_years == 0:
             total_years = extract_years_from_text(resume_text)
 
+        # Check years
+        exp_ok = False
         if min_years is not None and max_years is not None:
-            status = "✅ Match" if min_years <= total_years <= max_years else "❌ Missing"
-            experience_check = f"Requirement: {min_years}-{max_years} years, Candidate: {total_years} years"
+            exp_ok = min_years <= total_years <= max_years
         elif min_years is not None:
-            status = "✅ Match" if total_years >= min_years else "❌ Missing"
-            experience_check = f"Requirement: {min_years}+ years, Candidate: {total_years} years"
+            exp_ok = total_years >= min_years
+
+        # Extract required skills from requirement (text after "in" or after years)
+        skills_part = re.split(r"experience in|with experience in|experience with", requirement, flags=re.IGNORECASE)[-1]
+        required_skills = [s.strip() for s in re.split(r"[,/|]", skills_part) if s.strip()]
+        
+        # Check skills with SBERT similarity
+        matched, missing = [], []
+        if required_skills:
+            req_embs = sbert_model.encode(required_skills, convert_to_tensor=True)
+            cand_embs = sbert_model.encode(list(resume_keywords), convert_to_tensor=True)
+            for i, req in enumerate(required_skills):
+                sims = util.cos_sim(req_embs[i], cand_embs)[0]
+                if float(sims.max()) >= 0.6:
+                    matched.append(req)
+                else:
+                    missing.append(req)
+            skills_ok = len(matched) / len(required_skills) >= 0.5
         else:
-            status = "❌ Missing"
-            experience_check = f"Requirement unclear, Candidate: {total_years} years"
+            skills_ok = True  # no skills required
+
+        # Final status: only if BOTH experience and skills are ok
+        status = "✅ Match" if exp_ok and skills_ok else "❌ Missing"
+        experience_check = f"Requirement: {requirement}, Candidate: {total_years} years"
 
         return {
             "requirement": requirement,
             "status": status,
             "experience_check": experience_check,
+            "matched_keywords": matched,
+            "missing_keywords": missing,
+            "exp_ok": exp_ok,
+            "skills_ok": skills_ok,
             "category": category
         }
 
@@ -241,8 +268,7 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
         matched, missing = [], []
         for i, req in enumerate(required_skills):
             sims = util.cos_sim(req_embs[i], cand_embs)[0]
-            best_score = float(sims.max())
-            if best_score >= 0.6:  # semantic threshold
+            if float(sims.max()) >= 0.6:  # semantic threshold
                 matched.append(req)
             else:
                 missing.append(req)

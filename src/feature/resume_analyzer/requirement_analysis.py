@@ -5,6 +5,7 @@ import spacy
 from sentence_transformers import SentenceTransformer, util
 import torch
 
+from src.feature.resume_analyzer.check_education import check_education
 from src.Helper.resume_experience_gimini import generate_resume_experience_gemini
 from src.Helper.parser import extract_text_from_pdf
 
@@ -264,7 +265,15 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
             "skills_ok": skills_ok,
             "category": category
         }
-
+    # ---------- EDUCATION ----------
+    if category.lower() == "education":
+        status, reason = check_education(resume_text, requirement)
+        return {
+            "requirement": requirement,
+            "status": status,
+            "reason": reason,
+            "category": category
+        }
     # ---------- TECHNICAL SKILLS ----------
     if category.lower() == "technicalskills":
         required_skills = [s.strip() for s in re.split(r"[,/|]", requirement) if s.strip()]
@@ -376,6 +385,8 @@ def summarize_results(results):
             elif cat in ["TechnicalSkills", "Skills"] and r.get("matched_keywords"):
                 matched.append(f"{req} (Matched: {', '.join(r['matched_keywords'])})")
                 matched_skills.extend(r['matched_keywords'])
+            elif cat == "Education":
+                matched.append(f"{req} ({r['reason']})")
             else:
                 matched.append(f"{req} (Met)")
 
@@ -388,7 +399,7 @@ def summarize_results(results):
                 reason = r["experience_check"]
                 missing.append(f"{req} ({reason})")
             elif cat == "Education":
-                missing.append(f"{req} (No degree mentioned)")
+                missing.append(f"{req} ({r['reason']})")
             elif cat in ["TechnicalSkills", "Skills"]:
                 if r.get("missing_keywords"):
                     missing.append(f"{req} (No {', '.join(r['missing_keywords'])} mentioned)")

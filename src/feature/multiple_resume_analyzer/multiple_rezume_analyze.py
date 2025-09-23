@@ -1,7 +1,7 @@
 from src.Helper import banner_style
 from src.database.db_job_category import get_all_categories
 from src.database.db_candidates import save_candidate
-from src.feature.resume_analyzer.requirement_analysis import evaluate_resume
+from src.feature.helper_requirement_analyzer.requirement_analysis import evaluate_resume
 from src.database.db_job_requirements import get_requirements_by_category
 # from src.Helper.resume_feedback import generate_resume_feedback_gemini
 import streamlit as st

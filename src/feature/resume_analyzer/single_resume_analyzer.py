@@ -11,7 +11,7 @@ from src.Helper.extract_general_info import extract_email, extract_name_from_tex
 from src.database.db_candidates import save_candidate
 from src.database.db_job_category import get_all_categories
 from src.database.db_job_requirements import get_requirements_by_category
-from src.feature.resume_analyzer.requirement_analysis import evaluate_resume
+from src.feature.helper_requirement_analyzer.requirement_analysis import evaluate_resume
 from src.Helper.parser import extract_text_from_pdf
 
 # ============================

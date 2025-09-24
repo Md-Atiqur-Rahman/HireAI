@@ -156,13 +156,14 @@ def evaluate_resume(resume_text, job_requirements):
     resume_keywords = extract_keywords(resume_text)
 
     results = []
+    matched_skills = []  # শুধুমাত্র matched skills রাখব
 
     # iterate over each category
     for category, reqs in job_requirements.items():
         if not reqs:
             continue
 
-        # if reqs is a single string → wrap in list
+        # যদি reqs string হয়, তাহলে list বানাব
         if isinstance(reqs, str):
             reqs = [reqs]
 
@@ -171,6 +172,11 @@ def evaluate_resume(resume_text, job_requirements):
                 continue
             check = check_requirement(requirement, resume_sentences, resume_keywords, resume_text, category)
             results.append(check)
+
+            # Experience + TechnicalSkills থেকে matched skills collect করব
+            if category.lower() in ["experience", "technicalskills"]:
+                if "matched_keywords" in check:
+                    matched_skills.extend(check["matched_keywords"])
 
     # --- summarization ---
     overall_score, summary_text = summarize_results(results)
@@ -184,5 +190,5 @@ def evaluate_resume(resume_text, job_requirements):
                 total_experience = float(match.group(1))
                 break
 
-    return summary_text, total_experience, overall_score
-
+    # শুধুমাত্র matched skills return
+    return summary_text, total_experience, overall_score, list(set(matched_skills))

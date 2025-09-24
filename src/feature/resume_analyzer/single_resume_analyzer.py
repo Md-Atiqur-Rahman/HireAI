@@ -1,3 +1,4 @@
+import ast
 from datetime import datetime
 import sys
 import os
@@ -53,8 +54,17 @@ def resume_uploader():
             resume_text = extract_text_from_pdf(uploaded_file)
         else:
             resume_text = str(uploaded_file.read(), "utf-8")
-            
-        summary_text, total_exp, total_score = evaluate_resume(resume_text, job_requirements)
+        
+        #print("job_requirements:",job_requirements)
+        #job_requirements = "{'Experience': ['Full Stack Developer with 3 years of experience in C#, .Net'], 'Education': ['Bachelor’s degree in Computer Science'], 'TechnicalSkills': ['Strong in ASP.NET Core, MVC, Web API, MS SQL.', 'Experience with Angular or React for front-end development.', 'Familiarity with cloud platforms (Azure/AWS) and Git version control.'], 'Others': ['Project Management skills on Agile scrum', 'Fluent in oral and written communication in English']}"
+
+        job_requirements_str = "{'Experience': ['Full Stack Developer with 3 years of experience in C#, .Net'], 'Education': ['Bachelor’s degree in Computer Science'], 'TechnicalSkills': ['Strong in ASP.NET Core, MVC, Web API, MS SQL.', 'Experience with Angular or React for front-end development.', 'Familiarity with cloud platforms (Azure/AWS) and Git version control.'], 'Others': ['Project Management skills on Agile scrum', 'Fluent in oral and written communication in English']}"  
+
+        # convert string → dict
+        job_requirements = ast.literal_eval(job_requirements_str)
+
+        summary_text, total_exp, total_score,skills = evaluate_resume(resume_text, job_requirements)
+        print("skills:",skills)
         email = extract_email(resume_text)
         phone = extract_phone(resume_text)
         name = extract_name_from_text(resume_text,email)

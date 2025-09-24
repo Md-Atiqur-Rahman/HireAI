@@ -23,28 +23,33 @@ def job_requirements_page():
             st.session_state[key] = []
 
     # ---- Experience Section ----
+    # ---- Experience Section ----
     with st.expander("➕ Add Experience Requirement"):
-        years_input = st.text_input("Years of Experience", placeholder="e.g., 3, 3+, 3-5")
-        new_subject = st.text_input("Add Technology / Subject", key="subject_input")
-        if st.button("➕ Add Experience"):
-            if years_input.strip() and new_subject.strip():
-                text = f"{selected_category_name} with {years_input} years of experience in {new_subject}"
-                st.session_state.experience_reqs.append(text)
-                st.success(f"Added: {text}")
-                st.rerun()
-            else:
-                st.error("Please enter valid years & subject")
+        if len(st.session_state.experience_reqs) == 0:
+            years_input = st.text_input("Years of Experience", placeholder="e.g., 3, 3+, 3-5")
+            new_subject = st.text_input("Add Technology / Subject", key="subject_input")
+            if st.button("➕ Add Experience"):
+                if years_input.strip() and new_subject.strip():
+                    text = f"{selected_category_name} with {years_input} years of experience in {new_subject}"
+                    st.session_state.experience_reqs.append(text)
+                    st.success(f"Added: {text}")
+                else:
+                    st.error("Please enter valid years & subject")
+        else:
+            st.info("Only one Experience requirement is allowed. Delete the existing one to add a new.")
 
-        # Display with delete
-        for i, exp in enumerate(st.session_state.experience_reqs):
-            col1, col2 = st.columns([0.9, 0.1])
-            with col1:
-                st.markdown(f"- {exp}")
-            with col2:
-                if st.button("❌", key=f"exp_del_{i}"):
-                    st.session_state.experience_reqs.pop(i)
-                    st.success("Deleted!")
-                    st.rerun()
+        # Display existing Experience requirement(s)
+        if st.session_state.experience_reqs:
+            for i, exp in enumerate(st.session_state.experience_reqs):
+                col1, col2 = st.columns([0.9, 0.1])
+                with col1:
+                    st.markdown(f"- {exp}")
+                with col2:
+                    if st.button("❌", key=f"exp_del_{i}"):
+                        st.session_state.experience_reqs.pop(i)
+                        st.success("Deleted!")
+                        st.rerun()  # immediately refresh
+
 
     # ---- Education Section ----
     with st.expander("➕ Add Education Requirement"):

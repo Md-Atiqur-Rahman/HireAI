@@ -4,23 +4,20 @@ from src.Helper.banner_style import banner_style
 from src.database.db_job_category import get_all_categories
 from src.database.db_job_requirements import save_job_requirement, get_requirements_by_category
 
-
 def job_requirements_page():
     banner_style("Job Requirements Management 📝")
 
     # --- Category selection ---
     categories = get_all_categories()
-    selected_category_name = ""
-    selected_category_id = 0
     if not categories:
         st.warning("No categories found. Please add a category first.")
         return
-    else:
-        category_dict = {cat['name']: cat['id'] for cat in categories}
-        selected_category_name = st.selectbox("Select Job Category", list(category_dict.keys()))
-        selected_category_id = category_dict[selected_category_name]
 
-    # --- Session state init ---
+    category_dict = {cat['name']: cat['id'] for cat in categories}
+    selected_category_name = st.selectbox("Select Job Category", list(category_dict.keys()))
+    selected_category_id = category_dict[selected_category_name]
+
+    # --- Initialize session state ---
     for key in ["experience_reqs", "education_reqs", "tech_skills", "other_reqs"]:
         if key not in st.session_state:
             st.session_state[key] = []
@@ -34,13 +31,20 @@ def job_requirements_page():
                 text = f"{selected_category_name} with {years_input} years of experience in {new_subject}"
                 st.session_state.experience_reqs.append(text)
                 st.success(f"Added: {text}")
+                st.rerun()
             else:
                 st.error("Please enter valid years & subject")
 
-        if st.session_state.experience_reqs:
-            st.write("Current experience requirements:")
-            for exp in st.session_state.experience_reqs:
+        # Display with delete
+        for i, exp in enumerate(st.session_state.experience_reqs):
+            col1, col2 = st.columns([0.9, 0.1])
+            with col1:
                 st.markdown(f"- {exp}")
+            with col2:
+                if st.button("❌", key=f"exp_del_{i}"):
+                    st.session_state.experience_reqs.pop(i)
+                    st.success("Deleted!")
+                    st.rerun()
 
     # ---- Education Section ----
     with st.expander("➕ Add Education Requirement"):
@@ -50,26 +54,38 @@ def job_requirements_page():
             text = f"{degree} degree in {field}" if field.strip() else f"{degree} degree"
             st.session_state.education_reqs.append(text)
             st.success(f"Added: {text}")
+            st.rerun()
 
-        if st.session_state.education_reqs:
-            st.write("Current education requirements:")
-            for edu in st.session_state.education_reqs:
+        for i, edu in enumerate(st.session_state.education_reqs):
+            col1, col2 = st.columns([0.9, 0.1])
+            with col1:
                 st.markdown(f"- {edu}")
+            with col2:
+                if st.button("❌", key=f"edu_del_{i}"):
+                    st.session_state.education_reqs.pop(i)
+                    st.success("Deleted!")
+                    st.rerun()
 
-    # ---- Skills Section ----
+    # ---- Technical Skills Section ----
     with st.expander("➕ Add Technical Skill"):
         skill = st.text_input("Skill / Tool (e.g., Docker, Kubernetes, TensorFlow)")
         if st.button("➕ Add Skill"):
             if skill.strip():
                 st.session_state.tech_skills.append(skill.strip())
                 st.success(f"Added: {skill}")
+                st.rerun()
             else:
                 st.error("Enter a valid skill")
 
-        if st.session_state.tech_skills:
-            st.write("Current technical skills:")
-            for sk in st.session_state.tech_skills:
+        for i, sk in enumerate(st.session_state.tech_skills):
+            col1, col2 = st.columns([0.9, 0.1])
+            with col1:
                 st.markdown(f"- {sk}")
+            with col2:
+                if st.button("❌", key=f"sk_del_{i}"):
+                    st.session_state.tech_skills.pop(i)
+                    st.success("Deleted!")
+                    st.rerun()
 
     # ---- Others Section ----
     with st.expander("➕ Add Other Requirement"):
@@ -78,13 +94,19 @@ def job_requirements_page():
             if custom_req.strip():
                 st.session_state.other_reqs.append(custom_req.strip())
                 st.success(f"Added: {custom_req}")
+                st.rerun()
             else:
                 st.error("Requirement cannot be empty")
 
-        if st.session_state.other_reqs:
-            st.write("Current other requirements:")
-            for o in st.session_state.other_reqs:
+        for i, o in enumerate(st.session_state.other_reqs):
+            col1, col2 = st.columns([0.9, 0.1])
+            with col1:
                 st.markdown(f"- {o}")
+            with col2:
+                if st.button("❌", key=f"other_del_{i}"):
+                    st.session_state.other_reqs.pop(i)
+                    st.success("Deleted!")
+                    st.rerun()
 
     # ---- Save to DB ----
     if st.button("💾 Save All Requirements"):
@@ -97,17 +119,18 @@ def job_requirements_page():
         save_job_requirement(selected_category_id, requirements)
         st.success("✅ Requirements saved successfully!")
 
-    # ---- Show Existing ----
+    # ---- Show Existing from DB ----
+    # ---- Show Existing from DB ----
     st.subheader(f"📋 Current Requirements for {selected_category_name}")
     updated_reqs = get_requirements_by_category(selected_category_id)
 
-    if updated_reqs:
-        for key, values in updated_reqs.items():
-            st.markdown(f"**{key}:**")
-            if isinstance(values, list):
+    # Only display if there is at least one non-empty category
+    if any(updated_reqs.get(k) for k in ["Experience", "Education", "TechnicalSkills", "Others"]):
+        for key in ["Experience", "Education", "TechnicalSkills", "Others"]:
+            values = updated_reqs.get(key)
+            if values:  # only show non-empty categories
+                st.markdown(f"**{key}:**")
                 for v in values:
                     st.markdown(f"- {v}")
-            else:
-                st.markdown(f"- {values}")
     else:
         st.info("No requirements added yet.")

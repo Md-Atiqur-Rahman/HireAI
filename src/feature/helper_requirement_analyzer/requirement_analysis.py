@@ -156,19 +156,33 @@ def evaluate_resume(resume_text, job_requirements):
     resume_keywords = extract_keywords(resume_text)
 
     results = []
-    for category, requirement in job_requirements.items():
-        if not requirement.strip():
-            continue
-        check = check_requirement(requirement, resume_sentences, resume_keywords, resume_text, category)
-        results.append(check)
 
+    # iterate over each category
+    for category, reqs in job_requirements.items():
+        if not reqs:
+            continue
+
+        # if reqs is a single string → wrap in list
+        if isinstance(reqs, str):
+            reqs = [reqs]
+
+        for requirement in reqs:
+            if not requirement.strip():
+                continue
+            check = check_requirement(requirement, resume_sentences, resume_keywords, resume_text, category)
+            results.append(check)
+
+    # --- summarization ---
     overall_score, summary_text = summarize_results(results)
+
+    # --- total experience extraction ---
     total_experience = 0.0
     for r in results:
         if r["category"].lower() == "experience" and "experience_check" in r:
-            match = re.search(r"Candidate:\s*([\d\.]+)\s*years", r["experience_check"])
+            match = re.search(r"(\d+(\.\d+)?)\s*years", r["experience_check"])
             if match:
                 total_experience = float(match.group(1))
                 break
 
     return summary_text, total_experience, overall_score
+

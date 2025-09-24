@@ -1,7 +1,6 @@
 import streamlit as st
 from src.feature.home import home_page
 from src.Admin.job_requirment import job_requirements_page
-from src.feature.dashboards.test_dasboard import test_dashboard_page
 from src.feature.dashboards.dashboard import dashboard_page
 from src.feature.multiple_resume_analyzer.multiple_rezume_analyze import multiple_resume_analysis
 from src.feature.resume_analyzer.single_resume_analyzer import resume_uploader

@@ -1,13 +1,23 @@
+import sys
+import os
+
+
+
+# Add the project root to PYTHONPATH
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
+
 import re
 import spacy
 from sentence_transformers import SentenceTransformer, util
 import torch
 
+from src.feature.helper_requirement_analyzer.check_exp_ok import check_exp_ok_or_not_ok
+from src.feature.helper_requirement_analyzer.check_experience_skills import check_experience_skills
+from src.feature.helper_requirement_analyzer.check_technical_requirement import check_technical_requirement
 from src.feature.helper_requirement_analyzer.summarize_results import summarize_results
-from src.feature.helper_requirement_analyzer.extract_experience import extract_experience_entries, extract_years_from_text
 from src.feature.helper_requirement_analyzer.check_education import check_education
-from src.Helper.resume_experience_gimini import generate_resume_experience_gemini
-from src.Helper.parser import extract_text_from_pdf
+# from src.Helper.resume_experience_gimini import generate_resume_experience_gemini
+# from src.Helper.parser import extract_text_from_pdf
 # ===============================
 # Load Models
 # ===============================
@@ -33,69 +43,12 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
     """
     # ---------- EXPERIENCE ----------
     if category.lower() == "experience" or "year" in requirement.lower():
+        # ---------- Experience ----------
         # Extract min/max years
-        range_match = re.search(r"(\d+)\s*-\s*(\d+)\s*years", requirement, re.IGNORECASE)
-        single_match = re.search(r"(\d+)\+?\s*years", requirement, re.IGNORECASE)
-
-        min_years, max_years = None, None
-        if range_match:
-            min_years, max_years = int(range_match.group(1)), int(range_match.group(2))
-        elif single_match:
-            min_years = int(single_match.group(1))
-
-        # Extract total years from resume
-        _, total_years = extract_experience_entries(resume_text)
-        if total_years == 0:
-            total_years = extract_years_from_text(resume_text)
-
-        # Check years
-        exp_ok = False
-        if min_years is not None and max_years is not None:
-            exp_ok = min_years <= total_years <= max_years
-        elif min_years is not None:
-            exp_ok = total_years >= min_years
-
+        total_years,exp_ok = check_exp_ok_or_not_ok(requirement,resume_text)
         # Extract required skills from requirement (text after "in" or after years)
-        skills_part = re.split(r"experience in|with experience in|experience with", requirement, flags=re.IGNORECASE)[-1]
-        required_skills = [s.strip() for s in re.split(r"[,/|]", skills_part) if s.strip()]
+        check_experience_skills(resume_text,requirement,resume_keywords,total_years,exp_ok,category)
 
-        # Check skills with SBERT similarity
-        matched, missing = [], []
-        skills_ok = True
-        if required_skills:
-            req_embs = sbert_model.encode(required_skills, convert_to_tensor=True)
-            cand_embs = sbert_model.encode(list(resume_keywords), convert_to_tensor=True)
-            for i, req in enumerate(required_skills):
-                sims = util.cos_sim(req_embs[i], cand_embs)[0]
-                if float(sims.max()) >= 0.6:
-                    matched.append(req)
-                else:
-                    missing.append(req)
-            skills_ok = len(matched) / len(required_skills) >= 0.5
-
-        # Final status: only if BOTH experience and skills are ok
-        status = "✅ Match" if exp_ok and skills_ok else "❌ Missing"
-
-        # Build reason string
-        if not exp_ok and not skills_ok:
-            reason = f"User has {total_years} years and no {', '.join(missing)} mentioned"
-        elif not exp_ok:
-            reason = f"User has {total_years} years"
-        elif not skills_ok:
-            reason = f"User has {total_years} years and no {', '.join(missing)} mentioned"
-        else:
-            reason = f"User has {total_years} years"
-
-        return {
-            "requirement": requirement,
-            "status": status,
-            "experience_check": reason,
-            "matched_keywords": matched,
-            "missing_keywords": missing,
-            "exp_ok": exp_ok,
-            "skills_ok": skills_ok,
-            "category": category
-        }
     # ---------- EDUCATION ----------
     if category.lower() == "education":
         status, reason = check_education(resume_text, requirement)
@@ -107,31 +60,7 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
         }
     # ---------- TECHNICAL SKILLS ----------
     if category.lower() == "technicalskills":
-        required_skills = [s.strip() for s in re.split(r"[,/|]", requirement) if s.strip()]
-        candidate_skills = list(resume_keywords)
-
-        req_embs = sbert_model.encode(required_skills, convert_to_tensor=True)
-        cand_embs = sbert_model.encode(candidate_skills, convert_to_tensor=True)
-
-        matched, missing = [], []
-        for i, req in enumerate(required_skills):
-            sims = util.cos_sim(req_embs[i], cand_embs)[0]
-            if float(sims.max()) >= 0.6:  # semantic threshold
-                matched.append(req)
-            else:
-                missing.append(req)
-
-        ratio = len(matched) / len(required_skills) if required_skills else 0
-        status = "✅ Match" if ratio >= 0.5 else "❌ Missing"
-
-        return {
-            "requirement": requirement,
-            "status": status,
-            "category": category,
-            "matched_keywords": matched,
-            "missing_keywords": missing
-        }
-
+        check_technical_requirement(requirement, resume_text)
     # ---------- GENERIC REQUIREMENTS ----------
     req_emb = sbert_model.encode(requirement, convert_to_tensor=True)
     res_embs = sbert_model.encode(resume_sentences, convert_to_tensor=True)
@@ -156,7 +85,7 @@ def evaluate_resume(resume_text, job_requirements):
     resume_keywords = extract_keywords(resume_text)
 
     results = []
-    matched_skills = []  # শুধুমাত্র matched skills রাখব
+    matched_skills = [] 
 
     # iterate over each category
     for category, reqs in job_requirements.items():

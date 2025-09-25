@@ -1,17 +1,14 @@
 def summarize_results(results):
     """
     Returns overall score and detailed summary grouped by category.
-    Fail only if:
-        - Experience requirement not satisfied (years বা skills fail হলে)
-        - OR all TechnicalSkills requirements are ❌ Missing
+    Fail only if Experience or TechnicalSkills are completely missing.
+    Proportional score applied for TechnicalSkills, Education, and Others if multiple requirements exist.
     """
-
     weights = {
-        "Experience": 3,
-        "Education": 2,
-        "TechnicalSkills": 3,
-        "Skills": 1,
-        "Others": 1
+        "Experience": 30,
+        "Education": 20,
+        "TechnicalSkills": 30,
+        "Others": 20
     }
 
     total_weight = 0
@@ -24,74 +21,78 @@ def summarize_results(results):
 
     fail_due_to_critical = False
 
-    # --- Check TechnicalSkills overall ---
+    # --- Preprocess TechnicalSkills ---
     tech_results = [r for r in results if r.get("category") == "TechnicalSkills"]
-    tech_has_match = any(r["status"].startswith("✅") for r in tech_results)
+    tech_any_matched = any(len(r.get("matched_keywords", [])) > 0 for r in tech_results)
+    if tech_results and not tech_any_matched:
+        fail_due_to_critical = True
 
-    if tech_results and not tech_has_match:
-        fail_due_to_critical = True  # সব TechnicalSkills missing হলে FAIL
-
+    # --- Group results by category for proportional calculation ---
+    categories = {}
     for r in results:
-        req = r["requirement"]
-        status = r["status"]
         cat = r.get("category", "Other")
+        categories.setdefault(cat, []).append(r)
 
-        weight = weights.get(cat, 1)
+    for cat, cat_results in categories.items():
+        weight = weights.get(cat, 0)
         total_weight += weight
 
-        # ✅ Matched case
-        if status.startswith("✅"):
-            if cat == "TechnicalSkills":
-                # proportional scoring based on matched vs total
-                total_req_count = len(r.get("matched_keywords", [])) + len(r.get("missing_keywords", []))
-                if total_req_count > 0:
-                    per_req_weight = weight / total_req_count
-                    earned_weight += per_req_weight * len(r.get("matched_keywords", []))
-                matched.append(f"{req} (Matched: {', '.join(r['matched_keywords'])})")
-                matched_skills.extend(r['matched_keywords'])
+        if cat in ["TechnicalSkills", "Education", "Others"]:
+            n_reqs = len(cat_results)
+            if n_reqs == 0:
+                continue
+            # Proportional weight per requirement
+            per_req_weight = weight / n_reqs
+            for r in cat_results:
+                req = r["requirement"]
+                status = r["status"]
+                if cat == "TechnicalSkills":
+                    total_keywords = len(r.get("matched_keywords", [])) + len(r.get("missing_keywords", []))
+                    proportion = len(r.get("matched_keywords", [])) / total_keywords if total_keywords > 0 else 0
+                    earned_weight += per_req_weight * proportion
+                    if r.get("matched_keywords"):
+                        matched.append(f"{req} (Matched: {', '.join(r['matched_keywords'])})")
+                        matched_skills.extend(r['matched_keywords'])
+                    else:
+                        missing.append(f"{req} (No {', '.join(r.get('missing_keywords', []))} mentioned)")
+                        missing_skills.extend(r.get('missing_keywords', []))
+                else:  # Education or Others
+                    if status.startswith("✅"):
+                        earned_weight += per_req_weight
+                        reason = r.get("reason", "Met")
+                        matched.append(f"{req} ({reason})")
+                    else:
+                        missing.append(f"{req} (Not mentioned)")
 
-            elif cat == "Experience":
-                # Experience pass হলে weight add হবে
-                earned_weight += weight
-                reason = r.get("experience_check", "Experience check not available")
-                matched.append(f"{req} ({reason})")
-
-                # check skills_ok, exp_ok
-                if not r.get("exp_ok", True) or not r.get("skills_ok", True):
-                    fail_due_to_critical = True
-
-            elif cat == "Education":
-                earned_weight += weight
-                matched.append(f"{req} ({r.get('reason','Met')})")
-
-            elif cat in ["Skills", "Others"]:
-                earned_weight += weight
-                if r.get("matched_keywords"):
-                    matched.append(f"{req} (Matched: {', '.join(r['matched_keywords'])})")
-                    matched_skills.extend(r['matched_keywords'])
+        elif cat == "Experience":
+            # Only fail if Experience missing, full weight per Experience requirement
+            for r in cat_results:
+                req = r["requirement"]
+                status = r["status"]
+                if status.startswith("✅"):
+                    earned_weight += weight
+                    reason = r.get("experience_check", "Met")
+                    matched.append(f"{req} ({reason})")
+                    matched_skills.extend(r.get("matched_keywords", []))
                 else:
-                    matched.append(f"{req} (Met)")
+                    fail_due_to_critical = True
+                    reason = r.get("experience_check", "Not mentioned")
+                    missing.append(f"{req} ({reason})")
+                    missing_skills.extend(r.get("missing_keywords", []))
 
-        # ❌ Missing case
         else:
-            if cat == "Experience":
-                fail_due_to_critical = True
-                reason = r.get("experience_check", "Not mentioned")
-                missing.append(f"{req} ({reason})")
-
-            elif cat == "Education":
-                missing.append(f"{req} ({r.get('reason','Not mentioned')})")
-
-            elif cat in ["TechnicalSkills", "Skills", "Others"]:
-                if r.get("missing_keywords"):
-                    missing.append(f"{req} (No {', '.join(r['missing_keywords'])} mentioned)")
-                    missing_skills.extend(r['missing_keywords'])
+            for r in cat_results:
+                req = r["requirement"]
+                status = r["status"]
+                if status.startswith("✅"):
+                    earned_weight += weight
+                    matched.append(f"{req} (Met)")
                 else:
                     missing.append(f"{req} (Not mentioned)")
 
     overall_score = round((earned_weight / total_weight) * 100, 1) if total_weight > 0 else 0
     overall_score_display = (
-        "❌ FAIL (Critical Experience or all TechnicalSkills missing)"
+        "FAIL (Critical experience or technical skill missing)"
         if fail_due_to_critical else f"{overall_score}%"
     )
 
@@ -104,6 +105,7 @@ def summarize_results(results):
         f"\n📌 Met Requirements:\n   ✅ " + "\n   ✅ ".join(matched) if matched else "📌 Met: None",
         f"\n   Matched Skills: {', '.join(matched_skills)}" if matched_skills else "",
         f"\n⚠️ Missing Requirements:\n   ❌ " + "\n   ❌ ".join(missing) if missing else "⚠️ Missing: None",
+        f"\n   Missing Skills: {', '.join(missing_skills)}" if missing_skills else "",
         f"\n🔢 Score: {overall_score_display}"
     ]
 

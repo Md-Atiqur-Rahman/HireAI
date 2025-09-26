@@ -1,61 +1,83 @@
-
 import re
-
-from sentence_transformers import SentenceTransformer,util
-import spacy
-nlp = spacy.load("en_core_web_sm")
-sbert_model = SentenceTransformer("all-MiniLM-L6-v2")
+from src.feature.dataclasses.requirementresults import RequirementResult
 
 
-def check_experience_skills(resume_text,requirement,resume_keywords,total_years,exp_ok,category):
+def check_experience_skills(resume_text, requirement, resume_keywords, total_years, category):
+    """
+    Check both experience years and required technical skills for a requirement.
+    Partial match: at least 50% of required skills must be matched.
+    """
+
+    # --- 1. Extract required skills from requirement text ---
     skills_part = re.split(r"experience in|with experience in|experience with", requirement, flags=re.IGNORECASE)[-1]
     required_skills = [s.strip() for s in re.split(r"[,/|]", skills_part) if s.strip()]
 
-    matched, missing = [], []
-    skills_ok = True
-    for req in required_skills:
-        # For short keywords or symbols, match exact in resume text
-        if len(req) <= 3 or re.search(r"[#\.\-]", req):  # C#, .NET, etc.
-            if re.search(re.escape(req), resume_text, re.IGNORECASE):
-                matched.append(req)
-            else:
-                missing.append(req)
+    matched = []
+    missing = []
+
+    # --- 2. Match skills ---
+    for skill in required_skills:
+        found = False
+
+        # Direct mention in resume text
+        if re.search(rf"\b{re.escape(skill)}\b", resume_text, re.IGNORECASE):
+            matched.append(skill)
+            found = True
         else:
-            # Use SBERT for longer phrases
-            req_emb = sbert_model.encode(req, convert_to_tensor=True)
-            cand_embs = sbert_model.encode(list(resume_keywords), convert_to_tensor=True)
-            sims = util.cos_sim(req_emb, cand_embs)[0]
-            if float(sims.max()) >= 0.5:
-                matched.append(req)
-            else:
-                missing.append(req)
+            # Fallback to keyword bag
+            for kw in resume_keywords:
+                if skill.lower() in kw.lower():
+                    matched.append(skill)
+                    found = True
+                    break
 
+        if not found:
+            missing.append(skill)
 
-        skills_ok = len(matched) / len(required_skills) >= 0.5
+    # --- 3. Calculate skill match ratio ---
+    skills_ratio = len(matched) / len(required_skills) if required_skills else 0
+    skills_ok = skills_ratio >= 0.5  # ✅ at least 50% match
 
-    # Final status: only if BOTH experience and skills are ok
-    status = "✅ Match" if exp_ok and skills_ok else "❌ Missing"
-
-    print("matched------------\n", {', '.join(matched)})  # debug
-
-    # Build reason string
-    if not exp_ok and not skills_ok:
-        reason = f"User has {total_years} years and no {', '.join(missing)} mentioned"
-    elif not exp_ok:
-        reason = f"User has {total_years} years"
-    elif not skills_ok:
-        reason = f"User has {total_years} years and no {', '.join(missing)} mentioned"
+    # --- 4. Check experience years ---
+    exp_ok = False
+    required_years = None
+    match = re.search(r"(\d+(\.\d+)?)\s*years", requirement, re.IGNORECASE)
+    if match:
+        required_years = float(match.group(1))
+        exp_ok = total_years >= required_years
     else:
-        reason = f"User has {total_years} years"
-        
-    return {
-        "requirement": requirement,
-        "status": status,
-        "experience_check": reason,
-        "matched_keywords": matched,
-        "missing_keywords": missing,
-        "exp_ok": exp_ok,
-        "skills_ok": skills_ok,
-        "category": category
-        }
-        
+        exp_ok = True  # no years specified
+
+    # --- 5. Build status & reason ---
+    if exp_ok and skills_ok:
+        status = "✅ Match"
+        if missing:
+            reason = f"User has {total_years} years, matched {len(matched)}/{len(required_skills)} skills (missing: {', '.join(missing)})"
+        else:
+            reason = f"User has {total_years} years and matched all skills"
+    else:
+        status = "❌ Missing"
+        if not exp_ok:
+            if required_years:
+                reason = f"User has {total_years} years, requires {required_years} years"
+            else:
+                reason = "Experience not sufficient"
+        elif not skills_ok:
+            reason = f"User has {total_years} years but only matched {len(matched)}/{len(required_skills)} skills (missing: {', '.join(missing)})"
+        else:
+            reason = f"Does not meet requirement"
+
+    # --- 6. Return result object ---
+    return RequirementResult(
+        requirement=requirement,
+        status=status,
+        score=0.0,
+        experience_check=reason,
+        reason =reason,
+        exp_ok=exp_ok,
+        skills_ok=skills_ok,
+        total_years=total_years,
+        category=category,
+        matched_keywords=matched,
+        missing_keywords=missing
+    )

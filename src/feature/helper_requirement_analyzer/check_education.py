@@ -1,5 +1,7 @@
 import re
 
+from src.feature.dataclasses.requirementresults import RequirementResult
+
 # -----------------------
 # Check Education Requirement (Improved)
 # -----------------------
@@ -35,17 +37,42 @@ def check_education(resume_text, requirement):
         # Keep lines that contain degree keywords
         if any(k in clean_line.lower() for k in req_degree_keywords):
             edu_lines.append(clean_line)
-
+    status=None
+    reason =None
     if not edu_lines:
-        return "❌ Missing", f"No bachelor's degree in Computer Science or Engineering mentioned"
+        status ="❌ Missing"
+        reason = f"No bachelor's degree in Computer Science or Engineering mentioned"
+        return RequirementResult(
+                requirement = requirement,
+                status=status,
+                reason = reason,
+                category="Education",
+            )
+
 
     # Check for field match
     for line in edu_lines:
         line_lower = line.lower()
         if any(f in line_lower for f in req_fields):
-            return "✅ Met", f"user has {line.strip()}"  # Field matched
+            status ="✅ Match"
+            reason =  f"user has {line.strip()}"  # Field matched
+            return RequirementResult(
+                requirement = requirement,
+                status=status,
+                reason = reason,
+                category="Education"
+            )
+
 
     # Degree present but field does not match
     # Extract just the degree + field (remove links/dates)
     user_field_clean = re.sub(r'\d{4}|\bhttp\S+\b', '', edu_lines[0]).strip()
-    return "❌ Missing", f"Field of study not specified (User specified Field is {user_field_clean})"
+    #return "❌ Missing", f"Field of study not specified (User specified Field is {user_field_clean})"
+    # --- 6. Return result object ---
+    return RequirementResult(
+        requirement = requirement,
+        status=status,
+        reason = reason,
+        category="Education",
+    )
+

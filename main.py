@@ -108,12 +108,19 @@ from src.feature.helper_requirement_analyzer.requirement_analysis import evaluat
 resume_text = """
 Software Engineer with 6 years of experience in C#,SQL.
 Holds a Bachelor's degree in Computer Science.
-Worked with MongoDB and Oracle databases.
+Worked with MongoDB  databases.
+ASP.NET Core, MVC,
+Experience with Angular,
+(Azure/AWS) and Git version control
 Practices clean code principles and pair programming occasionally.
+Agile scrum
 Fluent in oral and written communication in English
 """
-# job_requirements_str = "{'Experience': ['Full Stack Developer with 3 years of experience in C#,SQL'], 'Education': ['Bachelor’s degree in Computer Science'], 'TechnicalSkills': ['Strong in ASP.NET Core, MVC, Web API, MS SQL.', 'Experience with Angular or React for front-end development.', 'Familiarity with cloud platforms (Azure/AWS) and Git version control.'], 'Others': ['Project Management skills on Agile scrum', 'Fluent in oral and written communication in English']}"  
-job_requirements_str = "{'Experience': ['Full Stack Developer with 3 years of experience in C#,SQL']}"  
+job_requirements_str = "{'Experience': ['Full Stack Developer with 3 years of experience in C#,SQL'], 'Education': ['Bachelor’s degree in Computer Science'], 'TechnicalSkills': ['Strong in ASP.NET Core, MVC, Web API, MS SQL.', 'Experience with Angular or React for front-end development.', 'Familiarity with cloud platforms (Azure/AWS) and Git version control.'], 'Others': ['Project Management skills on Agile scrum', 'Fluent in oral and written communication in English']}"  
+# job_requirements_str = "{'Experience': ['Full Stack Developer with 3 years of experience in Java,Oracle,Spring Boot,Asp .Net Core']}"  
+#job_requirements_str = "{'Education': ['Bachelor’s degree in Computer Science']}"  
+#job_requirements_str = "{'TechnicalSkills': ['Strong in ASP.NET Core, MVC, Web API, MS SQL.', 'Experience with Angular or React for front-end development.', 'Familiarity with cloud platforms (Azure/AWS) and Git version control.']}"  
+#job_requirements_str = "{'Others': ['Project Management skills on Agile scrum', 'Fluent in oral and written communication in English']}"  
 
     # convert string → dict
 job_requirements = ast.literal_eval(job_requirements_str)

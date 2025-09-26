@@ -1,6 +1,8 @@
 import re
 from sentence_transformers import SentenceTransformer, util
 
+from src.feature.dataclasses.requirementresults import RequirementResult
+
 sbert_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 def split_technical_requirement(req_text):
@@ -30,10 +32,17 @@ def check_technical_requirement(requirement, resume_text):
     match_ratio = len(matched) / len(required_skills) if required_skills else 0
     status = "✅ Match" if match_ratio >= 0.5 else "❌ Missing"
 
-    return {
-        "requirement": requirement,
-        "status": status,
-        "category": "TechnicalSkills",
-        "matched_keywords": matched,
-        "missing_keywords": missing
-    }
+    # return {
+    #     "requirement": requirement,
+    #     "status": status,
+    #     "category": "TechnicalSkills",
+    #     "matched_keywords": matched,
+    #     "missing_keywords": missing
+    # }
+    return RequirementResult(
+        requirement=requirement,
+        status=status,
+        category="TechnicalSkills",
+        matched_keywords=matched,
+        missing_keywords=missing
+    )

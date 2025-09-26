@@ -45,11 +45,9 @@ def summarize_results(results):
             for r in cat_results:
                 req = r.requirement
                 status = r.status
-                if cat == "TechnicalSkills":
-                    total_keywords = len(r.matched_keywords) + len(r.missing_keywords)
-                    proportion = len(r.matched_keywords) / total_keywords if total_keywords > 0 else 0
-                    earned_weight += per_req_weight * proportion
+                if cat == "TechnicalSkills": 
                     if r.matched_keywords:
+                        earned_weight += per_req_weight
                         matched.append(f"{req} (Matched: {', '.join(r.matched_keywords)})")
                         matched_skills.extend(r.matched_keywords)
                     else:
@@ -104,7 +102,7 @@ def summarize_results(results):
         f"\n   Matched Skills: {', '.join(matched_skills)}" if matched_skills else "",
         f"\n⚠️ Missing Requirements:\n   ❌ " + "\n   ❌ ".join(missing) if missing else "⚠️ Missing: None",
         f"\n   Missing Skills: {', '.join(missing_skills)}" if missing_skills else "",
-        f"\n🔢 Score: {overall_score_display}"
+        f"\n🔢 Score: {overall_score}"
     ]
 
     return overall_score, "\n".join([line for line in lines if line])

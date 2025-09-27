@@ -8,7 +8,7 @@ from src.feature.dataclasses.requirementresults import RequirementResult
 def check_education(resume_text, requirement):
     """
     Checks if a required degree AND relevant field exist in the resume.
-    Returns status and a polished reason string.
+    Returns a RequirementResult object.
     """
     requirement_lower = requirement.lower()
 
@@ -27,52 +27,35 @@ def check_education(resume_text, requirement):
     if "engineering" in requirement_lower:
         req_fields.append("engineering")
 
-    # Extract clean education lines: avoid links, dates, or irrelevant text
+    # Extract clean education lines from resume
     edu_lines = []
     for line in resume_text.split("\n"):
         clean_line = line.strip()
-        # Skip lines that contain links or only numbers
         if "http" in clean_line.lower() or re.fullmatch(r"[\d\-\.,]+", clean_line):
             continue
-        # Keep lines that contain degree keywords
         if any(k in clean_line.lower() for k in req_degree_keywords):
             edu_lines.append(clean_line)
-    status=None
-    reason =None
-    if not edu_lines:
-        status ="❌ Missing"
-        reason = f"No bachelor's degree in Computer Science or Engineering mentioned"
-        return RequirementResult(
-                requirement = requirement,
-                status=status,
-                reason = reason,
-                category="Education",
-            )
 
-
-    # Check for field match
+    matched_line = None
     for line in edu_lines:
         line_lower = line.lower()
         if any(f in line_lower for f in req_fields):
-            status ="✅ Match"
-            reason =  f"user has {line.strip()}"  # Field matched
-            return RequirementResult(
-                requirement = requirement,
-                status=status,
-                reason = reason,
-                category="Education"
-            )
+            matched_line = line
+            break
 
+    if matched_line:
+        status = "✅ Match"
+        reason = f"user has {matched_line.strip()}"
+    elif edu_lines:
+        status = "❌ Missing"
+        reason = f"Field not specified in requirement, user has {edu_lines[0].strip()}"  # Degree present but field mismatch
+    else:
+        status = "❌ Missing"
+        reason = f"No degree mentioned matching requirement"
 
-    # Degree present but field does not match
-    # Extract just the degree + field (remove links/dates)
-    user_field_clean = re.sub(r'\d{4}|\bhttp\S+\b', '', edu_lines[0]).strip()
-    #return "❌ Missing", f"Field of study not specified (User specified Field is {user_field_clean})"
-    # --- 6. Return result object ---
     return RequirementResult(
-        requirement = requirement,
+        requirement=requirement,
         status=status,
-        reason = reason,
-        category="Education",
+        reason=reason,
+        category="Education"
     )
-

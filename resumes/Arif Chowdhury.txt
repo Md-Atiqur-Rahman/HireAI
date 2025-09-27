@@ -16,16 +16,19 @@ Mar 2022 – Present
 
 Software Engineer | BrightSoft Ltd.
 Feb 2019 – Feb 2022
-- Maintained and upgraded legacy ASP.NET MVC applications.
+
 - Built reusable components with Entity Framework Core.
 - Designed database schemas for enterprise clients.
 
 Skills
 ----------------------------------
-C#, ASP.NET Core, Web API, Entity Framework Core, SQL Server, MongoDB, Redis, Docker, RabbitMQ
+C#, Angular,Agile scrum,Good in English
 
 Education
 ----------------------------------
-B.Sc. in Computer Science  
+B.Sc. in IIT
 Ahsanullah University of Science and Technology (AUST), Bangladesh  
 2018
+Masters’s degree in Computer Science
+Ahsanullah University of Science and Technology (AUST), Bangladesh  
+2019

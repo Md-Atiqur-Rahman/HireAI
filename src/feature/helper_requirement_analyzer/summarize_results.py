@@ -23,7 +23,7 @@ def summarize_results(results):
 
     # --- Preprocess TechnicalSkills ---
     tech_results = [r for r in results if r.category == "TechnicalSkills"]
-    tech_any_matched = any(len(r.matched_keywords) > 0 for r in tech_results)
+    tech_any_matched = any(r.status.startswith("✅") for r in tech_results)
     if tech_results and not tech_any_matched:
         fail_due_to_critical = True
 
@@ -46,7 +46,7 @@ def summarize_results(results):
                 req = r.requirement
                 status = r.status
                 if cat == "TechnicalSkills": 
-                    if r.matched_keywords:
+                    if r.status.startswith("✅"):
                         earned_weight += per_req_weight
                         matched.append(f"{req} (Matched: {', '.join(r.matched_keywords)})")
                         matched_skills.extend(r.matched_keywords)
@@ -59,7 +59,10 @@ def summarize_results(results):
                         reason = getattr(r, "reason", "Met")
                         matched.append(f"{req} ({reason})")
                     else:
-                        missing.append(f"{req} (Not mentioned)")
+                        if cat == "Education":
+                            reason = getattr(r, "reason", "Not mentioned")
+                            missing.append(f"{req} ({reason})")
+                        else: missing.append(f"{req} (Not mentioned)")
 
         elif cat == "Experience":
             for r in cat_results:

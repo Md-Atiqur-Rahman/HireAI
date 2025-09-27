@@ -1,0 +1,9 @@
+Name: Parvej Arif 
+Email: parvej.arif@example.com
+Contact: +8801934567890
+Summary:
+Full Stack Developer with 3 years of experience in C# and Java.
+Worked on enterprise apps.
+Skills: C#, Java
+Education:
+B.Sc. in Computer Science

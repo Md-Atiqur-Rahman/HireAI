@@ -1,0 +1,8 @@
+Name: Tanisha Mehzabin  
+Email: tanisha.mehzabin.test482@example.com  
+
+Experience: 3 years Full Stack Developer with C#, VB, SQL  
+Education: Bachelor’s degree in Computer Science, AIUB  
+Technical Skills: ASP.NET Core, MVC, Web API, MS SQL, React, AWS, Git  
+
+Others: Leadership skills  

@@ -1,0 +1,11 @@
+
+Name: Rahul Das
+Email: rahul.das@example.com
+Contact: +880191234567
+Summary:
+Full Stack Developer with 5 years of experience in C#, VB, SQL.
+Led projects using .NET Core and Angular.
+Skills: C#, VB, SQL, Angular, Azure
+Education:
+B.Sc. in Computer Science
+

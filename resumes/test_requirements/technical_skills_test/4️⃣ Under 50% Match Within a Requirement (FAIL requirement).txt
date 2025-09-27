@@ -1,0 +1,22 @@
+Name: Shafiq Rahman
+Email: shafiq.rahman@example.com
+Contact: +8801711334455
+Summary:
+Backend Developer with 3 years of .NET experience.
+
+Experience:
+Backend Engineer | SoftTech Solutions
+2020 – 2023
+- Built web apps using ASP.NET Core.
+
+Education:
+B.Sc. in Computer Science
+University of Rajshahi, Bangladesh
+2019
+
+Skills:
+ASP.NET Core
+
+Others:
+- Project Management skills on Agile Scrum
+- Fluent in oral and written communication in English

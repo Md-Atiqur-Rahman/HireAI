@@ -1,0 +1,11 @@
+
+Name: Jane Smith
+Email: jane.smith@example.com
+Contact: +880198765432
+Summary:
+Full Stack Developer with 3 years of experience in Python and JavaScript.
+Worked on web applications using Django and React.
+Skills: Python, JavaScript, Django, React
+Education:
+B.Sc. in Computer Science
+

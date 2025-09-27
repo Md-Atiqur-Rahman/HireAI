@@ -1,0 +1,11 @@
+
+Name: John Doe
+Email: john.doe@example.com
+Contact: +880123456789
+Summary:
+Junior Developer with 1 year of experience in C# and SQL.
+Worked on small web projects.
+Skills: C#, SQL, HTML, CSS
+Education:
+B.Sc. in Computer Science
+

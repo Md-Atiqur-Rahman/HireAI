@@ -1,0 +1,22 @@
+Name: Tanvir Hasan
+Email: tanvir.hasan@example.com
+Contact: +8801811223344
+Summary:
+Backend Developer with 4 years of experience in .NET Core and SQL.
+
+Experience:
+Software Engineer | CloudEdge Ltd.
+2019 – 2023
+- Developed scalable microservices in .NET Core and SQL Server.
+
+Education:
+B.Sc. in Computer Science
+Ahsanullah University of Science and Technology (AUST), Bangladesh
+2018
+
+Skills:
+ASP.NET Core, MVC, Web API, MS SQL
+
+Others:
+- Project Management skills on Agile Scrum
+- Fluent in oral and written communication in English

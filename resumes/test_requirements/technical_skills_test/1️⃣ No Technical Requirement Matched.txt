@@ -1,0 +1,23 @@
+Name: Alice Rahman
+Email: alice.rahman@example.com
+Contact: +8801711223344
+Summary:
+Full Stack Developer with 4 years of experience in PHP, Laravel, and MySQL.
+
+Experience:
+Software Engineer | CodeWave Ltd.
+2019 – 2023
+- Built web applications using PHP and Laravel.
+- Designed relational databases with MySQL.
+
+Education:
+B.Sc. in Computer Science
+University of Dhaka, Bangladesh
+2018
+
+Skills:
+PHP, Laravel, MySQL, HTML, CSS, JavaScript
+
+Others:
+- Project Management skills on Agile Scrum
+- Fluent in oral and written communication in English

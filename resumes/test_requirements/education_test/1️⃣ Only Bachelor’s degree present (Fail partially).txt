@@ -1,0 +1,11 @@
+Name: John sam
+Email: john.sam@example.com
+Contact: +880123456789
+Summary:
+Backend Developer with 4 years of experience in .NET and SQL.
+
+Education:
+B.Sc. in Computer Science
+Ahsanullah University of Science and Technology (AUST), Bangladesh
+2019
+

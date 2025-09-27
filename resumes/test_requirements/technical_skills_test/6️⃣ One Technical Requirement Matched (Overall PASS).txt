@@ -1,0 +1,22 @@
+Name: Farhan Ahmed
+Email: farhan.ahmed@example.com
+Contact: +8801911445566
+Summary:
+Full Stack Developer with 4 years of Angular experience.
+
+Experience:
+Frontend Engineer | BrightSoft Ltd.
+2019 – 2023
+- Developed SPA applications using Angular.
+
+Education:
+B.Sc. in Computer Science
+BUET, Bangladesh
+2018
+
+Skills:
+Angular, TypeScript, JavaScript
+
+Others:
+- Project Management skills on Agile Scrum
+- Fluent in oral and written communication in English

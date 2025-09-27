@@ -1,0 +1,8 @@
+Name: Saiful Rahman Nibir  
+Email: saiful.nibir.mock778@example.com  
+
+Experience: 3 years Full Stack Developer with C#, VB, SQL  
+Education: Bachelor’s degree in Computer Science, BRAC University  
+Technical Skills: ASP.NET Core, MVC, Web API, MS SQL, Angular, Azure, Git  
+
+Others: Project Management skills on Agile Scrum, Fluent in English, Time Management  

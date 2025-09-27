@@ -1,0 +1,22 @@
+Name: Nayeem Islam
+Email: nayeem.islam@example.com
+Contact: +8801811334455
+Summary:
+Backend Developer with 5 years of .NET experience.
+
+Experience:
+Backend Engineer | CloudApps Ltd.
+2018 – 2023
+- Developed APIs with ASP.NET Core, MVC, and Web API.
+
+Education:
+B.Sc. in Computer Science
+Khulna University, Bangladesh
+2017
+
+Skills:
+ASP.NET Core, MVC, Web API
+
+Others:
+- Project Management skills on Agile Scrum
+- Fluent in oral and written communication in English

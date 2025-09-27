@@ -1,0 +1,15 @@
+
+Name: Maria sultana
+Email: maria.sultana@example.com
+Contact: +880199876543
+Summary:
+Full Stack Developer with 5 years of experience in ASP.NET Core, SQL, and Angular.
+
+Education:
+B.Sc. in Computer Science
+Ahsanullah University of Science and Technology (AUST), Bangladesh
+2018
+
+Master’s degree in Computer Science
+Ahsanullah University of Science and Technology (AUST), Bangladesh
+2020

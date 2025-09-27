@@ -10,10 +10,13 @@ def  check_exp_ok_or_not_ok(requirement,resume_text):
         single_match = re.search(r"(\d+)\+?\s*years", requirement, re.IGNORECASE)
 
         min_years, max_years = None, None
+        required_years_str = None
         if range_match:
             min_years, max_years = int(range_match.group(1)), int(range_match.group(2))
+            required_years_str = f"{min_years}-{max_years} years"
         elif single_match:
             min_years = int(single_match.group(1))
+            required_years_str = f"{min_years} years"
 
         # Extract total years from resume
         _, total_years = extract_experience_entries(resume_text)
@@ -26,4 +29,4 @@ def  check_exp_ok_or_not_ok(requirement,resume_text):
             exp_ok = min_years <= total_years <= max_years
         elif min_years is not None:
             exp_ok = total_years >= min_years
-        return total_years,exp_ok
+        return total_years,exp_ok,required_years_str

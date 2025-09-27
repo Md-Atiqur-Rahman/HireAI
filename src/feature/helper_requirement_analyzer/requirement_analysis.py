@@ -49,9 +49,9 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
     if category.lower() == "experience" or "year" in requirement.lower():
         # ---------- Experience ----------
         # Extract min/max years
-        total_years,exp_ok = check_exp_ok_or_not_ok(requirement,resume_text)
+        total_years,exp_ok,required_years = check_exp_ok_or_not_ok(requirement,resume_text)
         # Extract required skills from requirement (text after "in" or after years)
-        return  check_experience_skills(resume_text,requirement,resume_keywords,total_years,category)
+        return  check_experience_skills(resume_text,requirement,resume_keywords,total_years,category,exp_ok,required_years)
         
 
     # ---------- EDUCATION ----------

@@ -1,8 +1,7 @@
 Name: Rafiul Karim  
 Email: rafiul.karim.test123@example.com  
 
-Experience: 3 years Full Stack Developer with C#, VB, SQL  
+Experience:Backend Developer with 4 years of experience in .NET Core and SQL.
 Education: Bachelor’s degree in Computer Science, Dhaka University  
 Technical Skills: ASP.NET Core, MVC, Web API, MS SQL, Angular, Azure, Git  
-
 Others: Strong problem-solving skills, excellent teamwork  

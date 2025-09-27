@@ -1,7 +1,7 @@
 Name: Farhanul Abeer  
 Email: farhanul.abeer.fake901@example.com  
 
-Experience: 3 years Full Stack Developer with C#, VB, SQL  
+Backend Developer with 4 years of experience in .NET Core and SQL.
 Education: Bachelor’s degree in Computer Science, North South University  
 Technical Skills: ASP.NET Core, MVC, Web API, MS SQL, Angular, Azure, Git  
 

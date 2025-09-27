@@ -8,4 +8,7 @@ Worked on web applications using Django and React.
 Skills: Python, JavaScript, Django, React
 Education:
 B.Sc. in Computer Science
+Others: Project Management skills on Agile Scrum, Fluent in oral and written communication in English  
+
+
 

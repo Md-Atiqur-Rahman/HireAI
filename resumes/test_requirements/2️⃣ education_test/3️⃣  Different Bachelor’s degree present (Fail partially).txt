@@ -1,12 +1,12 @@
-Name: John sam
-Email: john.sam@example.com
-Contact: +880123456789
+Name: Rabbi sam
+Email: rabbi.sam@example.com
+Contact: +880123456779
 Summary:
 Backend Developer with 4 years of experience in .NET and SQL.
 Led projects using .NET Core and Angular.
 Skills: C#, VB, SQL, Angular, Azure,ASP.NET Core, MVC,Git version control.
 Education:
-B.Sc. in Computer Science
+Business Studies in Management
 Ahsanullah University of Science and Technology (AUST), Bangladesh
 2019
 Others: Project Management skills on Agile Scrum, Fluent in oral and written communication in English  

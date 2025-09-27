@@ -1,0 +1,7 @@
+Name: Rafiq Chowdhury
+Email: rafiq.chowdhury.mock040@example.com
+
+Experience: 3 years with VB
+Education: Bachelor’s in Electrical Engineering
+Technical Skills: Git, React
+Others: Fluent in English

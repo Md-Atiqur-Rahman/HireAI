@@ -1,0 +1,7 @@
+Name: Imran Hossain
+Email: imran.hossain.mock100@example.com
+
+Experience: 3 years Full Stack Developer with C#, VB, SQL
+Education: Bachelor’s degree in Computer Science
+Technical Skills: ASP.NET Core, MVC, Web API, MS SQL, React, Azure, Git
+Others: Project Management skills on Agile Scrum, Fluent in oral and written communication in English

@@ -1,0 +1,7 @@
+Name: Nusrat Rahman
+Email: nusrat.rahman.mock010@example.com
+
+Experience: 3 years as Full Stack Developer (but in Python, not C#, VB, SQL)
+Education: Diploma in Arts
+Technical Skills: Photoshop, Design
+Others: Fluent in oral and written communication in English

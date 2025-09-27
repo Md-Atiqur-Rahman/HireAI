@@ -1,0 +1,7 @@
+Name: Tanisha Kabir
+Email: tanisha.kabir.mock070@example.com
+
+Experience: 3 years in C#, VB, SQL
+Education: Bachelor’s in Computer Science
+Technical Skills: Git, React
+Others: Fluent in English

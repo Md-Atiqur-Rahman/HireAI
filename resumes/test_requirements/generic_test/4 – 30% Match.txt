@@ -1,0 +1,7 @@
+Name: Shaila Anjum
+Email: shaila.anjum.mock030@example.com
+
+Experience: 3 years in SQL
+Education: Bachelor’s degree in Physics
+Technical Skills: Git, Azure
+Others: Leadership

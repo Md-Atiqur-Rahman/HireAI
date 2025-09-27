@@ -1,0 +1,7 @@
+Name: Hasan Mahmud
+Email: hasan.mahmud.mock020@example.com
+
+Experience: 3 years in C# but not VB or SQL
+Education: Diploma in Mechanical Engineering
+Technical Skills: Basic Git usage
+Others: Good communication

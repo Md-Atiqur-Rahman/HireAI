@@ -1,0 +1,7 @@
+Name: Mahira Zaman
+Email: mahira.zaman.mock050@example.com
+
+Experience: 3 years in C#
+Education: Bachelor’s in Computer Science
+Technical Skills: Git
+Others: Fluent in English

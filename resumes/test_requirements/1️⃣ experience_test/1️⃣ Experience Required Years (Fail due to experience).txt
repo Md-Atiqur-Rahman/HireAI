@@ -8,4 +8,6 @@ Worked on small web projects.
 Skills: C#, SQL, HTML, CSS
 Education:
 B.Sc. in Computer Science
+Others: Project Management skills on Agile Scrum, Fluent in oral and written communication in English  
+
 

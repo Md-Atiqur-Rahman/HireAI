@@ -1,0 +1,7 @@
+Name: Ashfaqur Rahman
+Email: ashfaqur.rahman.mock080@example.com
+
+Experience: 3 years in C#, VB, SQL
+Education: Bachelor’s in Computer Science
+Technical Skills: Git, React, Azure
+Others: Fluent in English

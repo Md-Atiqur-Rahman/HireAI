@@ -1,0 +1,7 @@
+Name: Farzana Haque
+Email: farzana.haque.mock090@example.com
+
+Experience: 3 years in C#, VB, SQL
+Education: Bachelor’s in Computer Science
+Technical Skills: Git, React, Azure, ASP.NET Core
+Others: Fluent in English

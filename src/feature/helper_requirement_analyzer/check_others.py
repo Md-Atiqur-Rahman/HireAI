@@ -29,29 +29,13 @@ def check_others_requirement(requirement,resume_text,req_keywords,resume_keyword
     best_score = float(torch.max(sims)) if len(sims) > 0 else 0
 
     
-    # SBERT similarity threshold
-    if best_score >= 0.5:
-        status = "✅ Match"
-    else:
-        # fallback to keyword overlap
-        matched = req_keywords & resume_keywords
-        missing = req_keywords - resume_keywords
-        status = "✅ Match" if len(matched) / len(req_keywords) >= 0.5 else "❌ Missing"
-        return RequirementResult(
-            requirement=requirement,
-            status=status,
-            score=round(best_score, 2),
-            category=category,
-            matched_keywords=matched,
-            missing_keywords=missing
-        )
-
-    # If SBERT match is good, consider all requirement keywords matched
+    matched = req_keywords & resume_keywords
+    missing = req_keywords - resume_keywords
     return RequirementResult(
         requirement=requirement,
-        status=status,
-        score=round(best_score, 2),
+        status="✅ Match" if best_score >= 0.45 else "❌ Missing",
+        score= round(best_score, 2),
         category=category,
-        matched_keywords=req_keywords,
-        missing_keywords=set()
+        matched_keywords=matched,
+        missing_keywords=missing
     )

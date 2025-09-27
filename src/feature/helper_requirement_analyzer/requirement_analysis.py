@@ -64,7 +64,7 @@ def check_requirement(requirement, resume_sentences, resume_keywords, resume_tex
     # ---------- GENERIC REQUIREMENTS ----------
     if category.lower() == "others":
         req_keywords = extract_keywords(requirement)
-        return check_others_requirement(requirement,resume_sentences,req_keywords,resume_keywords,category)
+        return check_others_requirement(requirement,resume_text,req_keywords,resume_keywords,category)
 
 
 

@@ -1,0 +1,30 @@
+Name: Farhan Ahmed Ratul
+Email: farhan.ahmed.ratul@example.com
+Contact: +8801711123456
+
+Summary
+----------------------------------
+Python Developer with 4 years of experience in Django, Flask, and PostgreSQL. Strong in REST APIs and microservices.
+
+Work Experience
+----------------------------------
+Python Developer | CloudEdge IT
+Jan 2020 – Present
+- Built REST APIs using Django and Flask.
+- Managed PostgreSQL databases.
+- Developed microservices in Python.
+
+Skills
+----------------------------------
+Python, Django, Flask, REST APIs, PostgreSQL, React, AWS, Git, Agile Scrum
+
+Education
+----------------------------------
+B.Sc. in Computer Science
+Ahsanullah University of Science and Technology
+2018
+
+Others
+----------------------------------
+Fluent in oral and written communication in English
+Project Management skills on Agile scrum

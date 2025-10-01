@@ -1,0 +1,28 @@
+Name: Rafiul Islam
+Email: rafiul.islam@example.com
+Contact: +8801798765432
+
+Summary
+----------------------------------
+Python Developer with 4 years of experience in backend development.
+
+Work Experience
+----------------------------------
+Python Developer | TechHive
+2019 – Present
+- REST APIs with Django.
+- PostgreSQL DB design.
+
+Skills
+----------------------------------
+Python, Django, Flask, REST APIs, PostgreSQL, React, AWS, Git
+
+Education
+----------------------------------
+Bachelor’s degree in Computer Science
+Ahsanullah University of Science and Technology
+2018
+
+Others
+----------------------------------
+Fluent in oral and written communication in English

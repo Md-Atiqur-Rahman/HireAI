@@ -1,0 +1,28 @@
+Name: Arif Mahmud
+Email: arif.mahmud@example.com
+Contact: +8801781234567
+
+Summary
+----------------------------------
+Python Developer with 3 years of experience in backend development.
+
+Work Experience
+----------------------------------
+Python Developer | NextGen IT
+2019 – 2022
+- Built Django REST APIs.
+- Managed PostgreSQL DBs.
+
+Skills
+----------------------------------
+Python, Django, Flask, REST APIs, PostgreSQL, Git, AWS
+
+Education
+----------------------------------
+Bachelor’s degree in Computer Science
+AUST
+2018
+
+Others
+----------------------------------
+(Not specified)

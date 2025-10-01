@@ -90,10 +90,18 @@ def summarize_results(results):
                     missing.append(f"{req} (Not mentioned)")
 
     overall_score = round((earned_weight / total_weight) * 100, 1) if total_weight > 0 else 0
-    overall_score_display = (
-        "FAIL (Critical experience or technical skill missing)"
-        if fail_due_to_critical else f"{overall_score}%"
-    )
+    # overall_score_display = (
+    #     "FAIL (Critical experience or technical skill missing)"
+    #     if fail_due_to_critical else f"{overall_score}%"
+    # )
+    if fail_due_to_critical:
+        overall_score_display = f"{overall_score}% – ❌ FAIL"
+        fail_reason = "Critical experience or technical skill missing"
+    else:
+        overall_score_display = f"{overall_score}%"
+        fail_reason = None
+
+
 
     matched_skills = sorted(set(matched_skills))
     missing_skills = sorted(set(missing_skills))
@@ -107,5 +115,7 @@ def summarize_results(results):
         f"\n   Missing Skills: {', '.join(missing_skills)}" if missing_skills else "",
         f"\n🔢 Score: {overall_score_display}"
     ]
-
+    if fail_reason:
+        lines.append(f"Reason: {fail_reason}")
     return overall_score, "\n".join([line for line in lines if line])
+

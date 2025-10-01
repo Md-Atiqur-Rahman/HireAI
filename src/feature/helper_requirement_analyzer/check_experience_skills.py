@@ -1,8 +1,9 @@
 import os
 import re
 import sys
-from sentence_transformers import SentenceTransformer, util
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from sentence_transformers import SentenceTransformer, util
 from src.feature.dataclasses.requirementresults import RequirementResult
 
 sbert_model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -21,7 +22,7 @@ def check_experience_skills(resume_text, requirement, resume_keywords, total_yea
     skills_part = re.split(r"experience in|with experience in|experience with", requirement, flags=re.IGNORECASE)[-1]
     required_skills = [s.strip() for s in re.split(r"[,/|]", skills_part) if s.strip()]
     resume_sentences = [s.strip() for s in resume_text.split("\n") if s.strip()]
-
+    
     matched = []
     missing = []
 

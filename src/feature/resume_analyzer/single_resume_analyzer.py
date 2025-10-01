@@ -7,7 +7,6 @@ import streamlit as st
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from src.Helper.banner_style import banner_style
-from src.Helper.extract_skills import extract_skills_tfidf
 from src.Helper.extract_general_info import extract_email, extract_name_from_text, extract_phone
 from src.database.db_candidates import save_candidate
 from src.database.db_job_category import get_all_categories

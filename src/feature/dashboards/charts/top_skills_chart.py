@@ -1,5 +1,6 @@
 from collections import Counter
 import random
+import re
 import streamlit as st
 import plotly.graph_objects as go
 
@@ -9,12 +10,19 @@ def top_selected_skills_chart(selected_category_id):
     skills_list = get_skills_by_category(selected_category_id)
 
         # Optional: show only selected skills
-    selected_skills = ["c#", "net", "python", "angular", "javascript"]
-    skills_list = [skill for skill in skills_list if skill in selected_skills]
+    selected_skills = ["net", "python", "java"]
+    #skills_list = [skill for skill in skills_list if skill in selected_skills]
+    matched_skills = []
 
+    for skill in skills_list:
+        for target in selected_skills:
+            # regex match: word boundary, case-insensitive
+            if re.search(rf"\b{re.escape(target)}\b", skill, re.IGNORECASE):
+                matched_skills.append(target.upper())  # append canonical name
+                break  # stop at first match
     # Count frequency
-    skill_counts = Counter(skills_list)
-
+    #skill_counts = Counter(skills_list)
+    skill_counts = Counter(matched_skills)
     if not skill_counts:
         st.warning("No skills found for this category.")
         return

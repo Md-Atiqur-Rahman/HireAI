@@ -1,0 +1,24 @@
+Name: Mehedi Hasan
+Email: mehedi.hasan@example.com
+Contact: +8801987654321
+
+Summary
+----------------------------------
+Python Developer with 3 years of experience.
+
+Work Experience
+----------------------------------
+Python Developer | DigiSoft
+2019 – 2022
+- Developed backend APIs with Django.
+
+Skills
+----------------------------------
+Python, Django, PostgreSQL,React
+
+Education
+----------------------------------
+
+Others
+----------------------------------
+

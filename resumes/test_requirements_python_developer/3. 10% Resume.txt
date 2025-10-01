@@ -1,0 +1,25 @@
+Name: Saima Rahman
+Email: saima.rahman@example.com
+Contact: +8801999876543
+
+Summary
+----------------------------------
+Motivated individual with passion for technology.
+
+Work Experience
+----------------------------------
+Internship in basic office automation tasks.
+
+Skills
+----------------------------------
+Microsoft Word, Excel
+
+Education
+----------------------------------
+Bachelor of Arts in History
+University of Rajshahi
+2022
+
+Others
+----------------------------------
+Fluent in oral and written communication in English

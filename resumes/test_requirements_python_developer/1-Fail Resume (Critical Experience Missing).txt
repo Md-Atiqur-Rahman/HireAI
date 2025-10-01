@@ -1,0 +1,25 @@
+Name: Nayeem Hasan
+Email: nayeem.hasan@example.com
+Contact: +8801789123456
+
+Summary
+----------------------------------
+Enthusiastic learner with strong interest in Python but no professional work experience yet.
+
+Work Experience
+----------------------------------
+None
+
+Skills
+----------------------------------
+Python basics, HTML, CSS
+
+Education
+----------------------------------
+B.Sc. in Computer Science
+University of Dhaka
+2023
+
+Others
+----------------------------------
+Good communication skills

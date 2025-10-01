@@ -1,0 +1,10 @@
+Name: John sina
+Email: john.sina.fail@example.com
+Experience:
+- PHP Developer with 1 year of experience in Laravel and MSSQL.
+Education:
+- Bachelor’s degree in Computer Science, XYZ University, 2018
+Technical Skills:
+- Symfony, JavaScript, HTML5, CSS3, Git, REST APIs, Docker
+Others:
+- Agile/Scrum, Problem-solving, English communication

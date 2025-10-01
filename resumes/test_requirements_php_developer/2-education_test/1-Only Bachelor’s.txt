@@ -1,0 +1,9 @@
+Name: Emily Blue
+Email: emily.blue.bsc@example.com
+- PHP Developer with 3 years of experience in Laravel
+Education:
+- Bachelor’s degree in Computer Science, MNO University, 2018
+Technical Skills:
+- Symfony, JavaScript, HTML5, CSS3, Git, REST APIs, Docker
+Others:
+- Agile/Scrum, Problem-solving, English communication

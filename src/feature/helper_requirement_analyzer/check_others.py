@@ -11,7 +11,7 @@ from src.feature.dataclasses.requirementresults import RequirementResult
 nlp = spacy.load("en_core_web_sm")
 sbert_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-def check_others_requirement(requirement,resume_text,req_keywords,resume_keywords,category):
+def check_others_requirement(requirement, resume_text, req_keywords, resume_keywords, category):
     resume_sentences = [s.strip() for s in resume_text.split("\n") if s.strip()]
     resume_skills_sentences = []
     for sent in resume_sentences:
@@ -19,22 +19,33 @@ def check_others_requirement(requirement,resume_text,req_keywords,resume_keyword
             resume_skills_sentences.extend(split_skills_line(sent))
         else:
             resume_skills_sentences.append(sent)
-            
-    
+
+    # ---- Prevent empty embeddings ----
+    if not resume_skills_sentences:
+        return RequirementResult(
+            requirement=requirement,
+            status="❌ Missing",
+            score=0.0,
+            category=category,
+            matched_keywords=set(),
+            missing_keywords=req_keywords
+        )
+
+    # ---- Encode embeddings ----
     req_emb = sbert_model.encode(requirement, convert_to_tensor=True)
     res_embs = sbert_model.encode(resume_skills_sentences, convert_to_tensor=True)
-    sims = util.cos_sim(req_emb, res_embs)[0]
-    test = float(sims.max())
-    test2=float(torch.max(sims))
-    best_score = float(torch.max(sims)) if len(sims) > 0 else 0
 
-    
+    # ---- Cosine similarity ----
+    sims = util.cos_sim(req_emb, res_embs)[0]   # shape: (N,)
+    best_score = float(torch.max(sims)) if sims.numel() > 0 else 0.0
+
     matched = req_keywords & resume_keywords
     missing = req_keywords - resume_keywords
+
     return RequirementResult(
         requirement=requirement,
         status="✅ Match" if best_score >= 0.45 else "❌ Missing",
-        score= round(best_score, 2),
+        score=round(best_score, 2),
         category=category,
         matched_keywords=matched,
         missing_keywords=missing

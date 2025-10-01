@@ -1,0 +1,27 @@
+Name: Imran Kabir
+Email: imran.kabir@example.com
+Contact: +8801791122334
+
+Summary
+----------------------------------
+Python Developer with 3 years of experience.
+
+Work Experience
+----------------------------------
+Python Developer | SoftTech
+2019 – 2022
+- Worked with core Python.
+
+Skills
+----------------------------------
+Python, Excel, Flask, PostgreSQL
+
+Education
+----------------------------------
+Bachelor’s degree in Computer Science
+BRAC University
+2018
+
+Others
+----------------------------------
+Presentation skills

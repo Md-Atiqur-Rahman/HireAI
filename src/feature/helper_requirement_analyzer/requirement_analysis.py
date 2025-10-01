@@ -1,17 +1,15 @@
 import sys
 import os
-
-
+import re
+import spacy
+from sentence_transformers import SentenceTransformer, util
+import torch
 
 
 
 # Add the project root to PYTHONPATH
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 
-import re
-import spacy
-from sentence_transformers import SentenceTransformer, util
-import torch
 
 from src.feature.helper_requirement_analyzer.check_others import check_others_requirement
 from src.feature.dataclasses.requirementresults import RequirementResult
@@ -20,7 +18,7 @@ from src.feature.helper_requirement_analyzer.check_experience_skills import chec
 from src.feature.helper_requirement_analyzer.check_technical_requirement import check_technical_requirement
 from src.feature.helper_requirement_analyzer.summarize_results import summarize_results
 from src.feature.helper_requirement_analyzer.check_education import check_education
-# from src.Helper.resume_experience_gimini import generate_resume_experience_gemini
+
 # from src.Helper.parser import extract_text_from_pdf
 # ===============================
 # Load Models

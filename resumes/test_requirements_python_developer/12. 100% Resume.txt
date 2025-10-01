@@ -1,0 +1,31 @@
+Name: Sadia Karim
+Email: sadia.karim@example.com
+Contact: +8801756781234
+
+Summary
+----------------------------------
+Python Developer with 5 years of experience in Django, Flask, PostgreSQL, and front-end integration.
+
+Work Experience
+----------------------------------
+Senior Python Developer | CloudEdge IT
+2018 – Present
+- Built REST APIs with Django and Flask.
+- Developed front-end integration with React.
+- Managed PostgreSQL databases.
+- Worked on AWS cloud deployments.
+
+Skills
+----------------------------------
+Python, Django, Flask, REST APIs, PostgreSQL, React, AWS, Git
+
+Education
+----------------------------------
+Bachelor’s degree in Computer Science
+North South University
+2016
+
+Others
+----------------------------------
+Project Management skills on Agile scrum
+Fluent in oral and written communication in English

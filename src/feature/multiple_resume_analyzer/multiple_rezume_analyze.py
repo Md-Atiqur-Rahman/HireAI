@@ -11,15 +11,15 @@ import nltk
 import plotly.express as px
 
 from src.Helper.extract_general_info import extract_email, extract_name_from_text, extract_phone
-from src.Helper.extract_skills import extract_skills_tfidf
 from src.Helper.extractor import extract_keywords
 from src.Helper.parser import extract_text_from_pdf
 from src.Helper.banner_style import banner_style
 
 def multiple_resume_analysis():
     # Download NLTK data
-    nltk.download('punkt')
-    nltk.download('stopwords')
+    nltk.download('punkt')      # type: ignore
+    nltk.download('stopwords')  # type: ignore
+
 
     # Initialize session state
     for key in ["results", "analysis_done", "jd_text", "jd_keywords", "resume_files", "jd_file", "resume_files_input", "analyze_triggered","selected_candidate" ]:
@@ -107,9 +107,8 @@ def multiple_resume_analysis():
             email = extract_email(resume_text)
             phone = extract_phone(resume_text)
             name =extract_name_from_text(resume_text,email)
-            skills = extract_skills_tfidf(resume_text,st.session_state.jd_text)
-            print("skills---->",skills)
-            summary_text, total_exp, total_score = evaluate_resume(resume_text, st.session_state.jd_file)
+            summary_text, total_exp, total_score,technicalskills = evaluate_resume(resume_text, st.session_state.jd_file)
+            print("skills---->",technicalskills)
             experience = total_exp
             total_score = total_score
             result = {
@@ -118,11 +117,11 @@ def multiple_resume_analysis():
                 "Contact": phone,
                 "Experience": experience,
                 "TotalScore": total_score,
-                "Skills": skills,
+                "Skills": technicalskills,
                 "SummaryText":summary_text
             }
 
-            save_candidate(name, email, phone, experience, total_score, skills, summary_text, selected_category_id)
+            save_candidate(name, email, phone, experience, total_score, technicalskills, summary_text, selected_category_id)
 
 
             st.session_state.results.append(result)

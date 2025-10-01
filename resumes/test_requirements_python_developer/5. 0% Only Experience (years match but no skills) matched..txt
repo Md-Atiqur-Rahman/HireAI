@@ -1,0 +1,28 @@
+Name: Sohana Akter
+Email: sohana.akter@example.com
+Contact: +8801712349876
+
+Summary
+----------------------------------
+Developer with 3 years of work experience.
+
+Work Experience
+----------------------------------
+Software Developer | BrightSoft Ltd.
+2019 – 2022
+- Worked on desktop applications.
+- Assisted in database reporting.
+
+Skills
+----------------------------------
+VB, C#, Oracle
+
+Education
+----------------------------------
+B.Sc. in Physics
+University of Chittagong
+2017
+
+Others
+----------------------------------
+Team player

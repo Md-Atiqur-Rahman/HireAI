@@ -1,0 +1,29 @@
+Name: Nusrat Jahan
+Email: nusrat.jahan@example.com
+Contact: +8801719876543
+
+Summary
+----------------------------------
+Python Developer with 5 years of experience.
+
+Work Experience
+----------------------------------
+Python Developer | CloudBridge
+2017 – Present
+- Built scalable APIs in Django and Flask.
+- Managed PostgreSQL DBs.
+
+Skills
+----------------------------------
+Python, Django, Flask, REST APIs, PostgreSQL, AWS, Git
+
+Education
+----------------------------------
+Bachelor’s degree in Computer Science
+Dhaka University
+2016
+
+Others
+----------------------------------
+Fluent in oral and written communication in English
+Project Management skills on Agile scrum

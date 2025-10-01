@@ -31,7 +31,8 @@ X.X
 Resume text:
 "{resume_text}"
 """
-    model = genai.GenerativeModel("gemini-1.5-flash")  # or gemini-pro
+    model = genai.GenerativeModel("gemini-2.5-flash")  # or gemini-pro
+    
     response = model.generate_content(prompt)
     
     # Extract the numeric part from response

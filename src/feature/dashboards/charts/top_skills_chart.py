@@ -10,7 +10,7 @@ def top_selected_skills_chart(selected_category_id):
     skills_list = get_skills_by_category(selected_category_id)
 
         # Optional: show only selected skills
-    selected_skills = ["net", "python", "java"]
+    selected_skills = ["net", "python", "java","laravel","php"]
     #skills_list = [skill for skill in skills_list if skill in selected_skills]
     matched_skills = []
 

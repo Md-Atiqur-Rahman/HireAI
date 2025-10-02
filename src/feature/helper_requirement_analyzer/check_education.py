@@ -31,8 +31,17 @@ def check_education(resume_text, requirement):
     edu_lines = []
     for line in resume_text.split("\n"):
         clean_line = line.strip()
+        if not clean_line:
+            continue
+
         if "http" in clean_line.lower() or re.fullmatch(r"[\d\-\.,]+", clean_line):
             continue
+        if "@" in clean_line or "email" in clean_line.lower():
+            continue
+        if re.search(r"\b\d{4}\b", clean_line) and "degree" not in clean_line.lower():
+            # ignore standalone years unless part of degree
+            continue
+        
         if any(k in clean_line.lower() for k in req_degree_keywords):
             edu_lines.append(clean_line)
 

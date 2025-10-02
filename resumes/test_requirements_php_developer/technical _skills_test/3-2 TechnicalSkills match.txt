@@ -1,5 +1,0 @@
-Name: Irene Orange
-Email: irene.orange.two@example.com
-Technical Skills:
-- Symfony, Git
-Others same as David Green

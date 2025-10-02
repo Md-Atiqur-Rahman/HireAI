@@ -1,4 +1,0 @@
-Name: Quinn Green
-Email: quinn.green.50high@example.com
-Others:
-- Agile/Scrum, Problem-solving

@@ -1,4 +1,0 @@
-Name: Olivia Brown
-Email: olivia.brown.all@example.com
-Others:
-- Agile/Scrum, Problem-solving, English communication

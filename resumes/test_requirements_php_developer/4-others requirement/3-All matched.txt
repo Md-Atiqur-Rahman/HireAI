@@ -1,0 +1,10 @@
+Name: Olivia Brown
+Email: olivia.brown.all@example.com
+Experience:
+- PHP Developer with 3 years of experience in Laravel
+Education:
+- Bachelor’s degree in Computer Science, DEF University, 2016
+Technical Skills:
+- Symfony, JavaScript,HTML5, Git, RESTful APIs,Docker
+Others:
+- Agile/Scrum, Problem-solving, English communication

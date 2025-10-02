@@ -1,0 +1,20 @@
+job_requirements = {
+    "Experience": [
+        "PHP Developer with 3 years of experience in Laravel and MSSQL"
+    ],
+    "Education": [
+        "Bachelor’s degree in Computer Science or related field"
+    ],
+    "TechnicalSkills": [
+        "Experience with Symfony or CodeIgniter frameworks.",
+        "Front-end technologies such as JavaScript, HTML5, CSS3.",
+        "Familiarity with version control tools such as Git.",
+        "Knowledge of RESTful APIs and web services integration.",
+        "Understanding of Docker or containerized environments."
+    ],
+    "Others": [
+        "Good understanding of Agile/Scrum methodologies.",
+        "Strong problem-solving and debugging skills.",
+        "Fluent in oral and written communication in English."
+    ]
+}

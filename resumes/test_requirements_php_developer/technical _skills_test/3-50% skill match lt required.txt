@@ -1,5 +1,0 @@
-Name: Jack Violet
-Email: jack.violet.50low@example.com
-Technical Skills:
-- Symfony, Git
-Others same as David Green

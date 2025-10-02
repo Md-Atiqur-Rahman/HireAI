@@ -1,0 +1,10 @@
+Name: Henry Pink
+Email: henry.pink.one@example.com
+Technical Skills:
+- Symfony
+Experience:
+- PHP Developer with 3 years of experience in Laravel
+Education:
+- Bachelor’s degree in Computer Science, DEF University, 2016
+Others:
+- Agile/Scrum, Problem-solving, English communication

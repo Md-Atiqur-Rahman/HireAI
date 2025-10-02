@@ -2,7 +2,7 @@
 
 import re
 from src.feature.helper_requirement_analyzer.extract_experience import extract_experience_entries, extract_years_from_text
-from src.Helper.resume_experience_gimini import generate_resume_experience_gemini
+# from src.Helper.resume_experience_gimini import generate_resume_experience_gemini
 
 
 def  check_exp_ok_or_not_ok(requirement,resume_text):
@@ -25,9 +25,9 @@ def  check_exp_ok_or_not_ok(requirement,resume_text):
             experience_entries, total_years = extract_experience_entries(resume_text)
         if total_years == 0:
             total_years = extract_years_from_text(resume_text)
-        if total_years == 0:
-            print("call gemini---")
-            total_years = generate_resume_experience_gemini(resume_text)
+        # if total_years == 0:
+        #     print("call gemini---")
+        #     total_years = generate_resume_experience_gemini(resume_text)
 
         # Check years
         exp_ok = False

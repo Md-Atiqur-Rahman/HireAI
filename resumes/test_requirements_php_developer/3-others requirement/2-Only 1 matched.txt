@@ -1,4 +1,0 @@
-Name: Noah White
-Email: noah.white.one@example.com
-Others:
-- Agile/Scrum

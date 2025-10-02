@@ -1,5 +1,0 @@
-Name: Henry Pink
-Email: henry.pink.one@example.com
-Technical Skills:
-- Symfony
-Others same as David Green

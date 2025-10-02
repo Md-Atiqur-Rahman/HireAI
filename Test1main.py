@@ -18,12 +18,13 @@ Fluent in oral and written communication in English
 # resume_text = extract_text_from_pdf( "E:/Thesis/resume-analyzer/resumes/Md Atiqur Rahman.pdf")
 # resume_text = extract_text_from_pdf( "E:/Thesis/resume-analyzer/resumes/Arif Chowdhury.txt")
 # file_path = "E:/Thesis/resume-analyzer/resumes/Arif Chowdhury.txt"
-file_path = os.path.join("resumes", "Arif Chowdhury.txt")
+file_path = os.path.join("resumes/test_requirements_php_developer/2-education_test", "2-No Bachelor’s .txt")
 with open(file_path, "r", encoding="utf-8") as f:
     resume_text = f.read()
-job_requirements_str = "{'Experience': ['Full Stack Developer with 3 years of experience in C#,VB,SQL'], 'Education': ['Bachelor’s degree in Computer Science'], 'TechnicalSkills': ['Strong in ASP.NET Core, MVC, Web API, MS SQL.', 'Experience with Angular or React for front-end development.', 'Familiarity with cloud platforms (Azure/AWS) and Git version control.'], 'Others': ['Project Management skills on Agile scrum', 'Fluent in oral and written communication in English']}"  
+#job_requirements_str = "{'Experience': ['Full Stack Developer with 3 years of experience in C#,VB,SQL'], 'Education': ['Bachelor’s degree in Computer Science'], 'TechnicalSkills': ['Strong in ASP.NET Core, MVC, Web API, MS SQL.', 'Experience with Angular or React for front-end development.', 'Familiarity with cloud platforms (Azure/AWS) and Git version control.'], 'Others': ['Project Management skills on Agile scrum', 'Fluent in oral and written communication in English']}"  
 #job_requirements_str = "{'Experience': ['Full Stack Developer with 3 years of experience in C#,SQL']}"  
 #job_requirements_str = "{'Education': ['Bachelor’s degree in Computer Science','Masters’s degree in Computer Science']}"  
+job_requirements_str = "{'Education': ['Bachelor’s degree in Computer Science or related field']}"  
 #job_requirements_str = "{'TechnicalSkills': ['Strong in ASP.NET Core, MVC, Web API, MS SQL.', 'Experience with Angular or React for front-end development.', 'Familiarity with cloud platforms (Azure/AWS) and Git version control.']}"  
 #job_requirements_str = "{'TechnicalSkills': ['Strong in ASP.NET Core, MVC, Web API, MS SQL.','Experience with Angular or React for front-end development.']}"  
 #job_requirements_str = "{'Others': ['Project Management skills on Agile scrum', 'Fluent in oral and written communication in English']}"  

@@ -15,8 +15,11 @@ def clear_all_requirements():
     for key in ["experience_reqs", "education_reqs", "tech_skills", "other_reqs"]:
         st.session_state[key] = []   # সবসময় empty করে দেবে
     # expander flags reset (সব collapse হবে)
+    
+def collpase_all_expander():
     for key in ["exp_expander", "edu_expander", "skill_expander", "other_expander"]:
         st.session_state[key] = False
+
 
 # dynamic key counters
 def clear_input():
@@ -50,6 +53,7 @@ def job_requirements_page():
     # ---- Experience Section ----
     # ---- Experience Section ----
     with st.expander("➕ Add Experience Requirement", expanded=st.session_state.get("exp_expander", False)):
+        st.session_state["exp_expander"] = True 
         if len(st.session_state.experience_reqs) == 0:
             years_input = st.text_input("Years of Experience", placeholder="e.g., 3, 3+, 3-5",key=f"years_input_{st.session_state.years_input_key}")
             new_subject = st.text_input("Add Technology / Subject",key=f"subject_input_{st.session_state.subject_input_key}")
@@ -83,6 +87,7 @@ def job_requirements_page():
 
     # ---- Education Section ----
     with st.expander("➕ Add Education Requirement", expanded=st.session_state.get("edu_expander", False)):
+        st.session_state["edu_expander"] = True 
         degree = st.selectbox("Degree", ["Bachelor’s", "Master’s", "PhD", "Other"])
         field = st.text_input("Field of Study (e.g., Computer Science, Engineering)",key=f"field_input_{st.session_state.field_input_key}")
         
@@ -108,6 +113,7 @@ def job_requirements_page():
 
     # ---- Technical Skills Section ----
     with st.expander("➕ Add Technical Skill", expanded=st.session_state.get("skill_expander", False)):
+        st.session_state["skill_expander"] = True 
         skill = st.text_input("Skill / Tool (e.g., Docker, Kubernetes, TensorFlow)",key=f"skills_input_{st.session_state.skills_input_key}")
         if st.button("➕ Add Skill"):
             if skill.strip():
@@ -131,6 +137,7 @@ def job_requirements_page():
 
     # ---- Others Section ----other_input_key
     with st.expander("➕ Add Other Requirement", expanded=st.session_state.get("other_expander", False)):
+        st.session_state["other_expander"] = True 
         # custom_req = st.text_area("Custom Requirement",key=f"other_input_{st.session_state.other_input_key}")
         custom_req = st.text_input("Others Requirement",key=f"other_input_{st.session_state.other_input_key}")
         
@@ -157,6 +164,7 @@ def job_requirements_page():
     # ---- Save to DB ----
     if st.button("💾 Save All Requirements"):
         # validation checks
+        collpase_all_expander()
         if not st.session_state.experience_reqs:
             st.warning("⚠️ Please add at least one Experience requirement before saving.")
         elif not st.session_state.education_reqs:
@@ -176,6 +184,7 @@ def job_requirements_page():
             # save_job_requirement(selected_category_id, requirements)
             st.success("✅ Requirements saved successfully!")
             clear_all_requirements()
+            collpase_all_expander()
             st.rerun()
 
     # ---- Show Existing from DB ----

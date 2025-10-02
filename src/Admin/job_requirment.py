@@ -28,6 +28,7 @@ def clear_input():
             st.session_state[k] = 0
 
 def job_requirements_page():
+    collpase_all_expander()
     for key in ["experience_reqs", "education_reqs", "tech_skills", "other_reqs"]:
         if key not in st.session_state:
             st.session_state[key] = []
@@ -181,7 +182,7 @@ def job_requirements_page():
                 "Others": st.session_state.other_reqs
             }
             print("requirements--------->",json.dumps(requirements))
-            # save_job_requirement(selected_category_id, requirements)
+            save_job_requirement(selected_category_id, requirements)
             st.success("✅ Requirements saved successfully!")
             clear_all_requirements()
             collpase_all_expander()
@@ -191,7 +192,7 @@ def job_requirements_page():
     # ---- Show Existing from DB ----
     st.subheader(f"📋 Current Requirements for {selected_category_name}")
     updated_reqs = get_requirements_by_category(selected_category_id)
-
+    collpase_all_expander()
     # Only display if there is at least one non-empty category
     if any(updated_reqs.get(k) for k in ["Experience", "Education", "TechnicalSkills", "Others"]):
         for key in ["Experience", "Education", "TechnicalSkills", "Others"]:

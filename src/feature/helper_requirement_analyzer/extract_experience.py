@@ -44,7 +44,7 @@ def extract_experience_entries(text):
             continue
 
     total_years = round(total_months / 12, 1)
-    print("total_years----->",total_years)
+    # print("total_years----->",total_years)
     return experience_entries, total_years
 
 def extract_years_from_text(text):

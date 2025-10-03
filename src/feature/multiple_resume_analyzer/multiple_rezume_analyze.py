@@ -15,22 +15,31 @@ from src.Helper.extractor import extract_keywords
 from src.Helper.parser import extract_text_from_pdf
 from src.Helper.banner_style import banner_style
 
+def collpase_all_expander():
+    for key in ["detailed_analysis_expander"]:
+        st.session_state[key] = False
+def reset():
+    for key in ["results", "analysis_done", "jd_text", "jd_keywords", "resume_files", "analyze_triggered"]:
+            st.session_state[key] = [] if "results" in key or key == "jd_keywords" else False if "done" in key or "triggered" in key else ""
+    st.rerun()
+
 def multiple_resume_analysis():
-    # Download NLTK data
+        # Download NLTK data
     nltk.download('punkt')      # type: ignore
     nltk.download('stopwords')  # type: ignore
-
+    st.session_state.selected_candidate = None
+    collpase_all_expander()
 
     # Initialize session state
     for key in ["results", "analysis_done", "jd_text", "jd_keywords", "resume_files", "jd_file", "resume_files_input", "analyze_triggered","selected_candidate" ]:
         if key not in st.session_state:
-            st.session_state[key] = [] if "files" in key or key == "jd_keywords" else False if "done" in key or "triggered" in key else ""
+            st.session_state[key] = [] if "results" in key or key == "jd_keywords" else False if "done" in key or "triggered" in key else ""
 
     # 🔄 Reset button
     if st.button("🔄 Reset App"):
-        for key in ["results", "analysis_done", "jd_text", "jd_keywords", "resume_files", "analyze_triggered"]:
-            st.session_state[key] = [] if "results" in key or key == "jd_keywords" else False if "done" in key or "triggered" in key else ""
-        st.rerun()
+        reset()
+    
+    
 
     # UI
     # st.title("📄Multiple Resume Analyzer (HireAI)")
@@ -163,7 +172,7 @@ def multiple_resume_analysis():
                     unique_id = f"{row['Email']}_{i}_{idx}"
                     if row_cols[6].button("Details", key=f"details_btn_live_{unique_id}"):
                         st.session_state.selected_candidate = row.to_dict()
-
+                        st.session_state["detailed_analysis_expander"] = True
 
 
             progress_bar.progress((idx + 1) / total_resumes)
@@ -212,7 +221,7 @@ def multiple_resume_analysis():
                 unique_id = f"{row['Email']}_{i}_{row.name}"
                 if row_cols[6].button("Details", key=f"details_btn_final_{unique_id}"):
                     st.session_state.selected_candidate = row.to_dict()
-
+                    st.session_state["detailed_analysis_expander"] = True
 
 
             csv = df_final.to_csv(index=False).encode("utf-8")
@@ -242,10 +251,12 @@ def multiple_resume_analysis():
 
         with resume_analysis_container.container():
             st.subheader(f"📄 Analysis for {candidate_name}")
-            with st.expander("📋 Detailed Analysis", expanded=True):
+            with st.expander("📋 Detailed Analysis", expanded=st.session_state.get("detailed_analysis_expander", False)):
+                st.session_state["detailed_analysis_expander"] = True 
                 st.write(f"**Score (%):** {candidate_score}")
                 st.text(candidate_summary)
 
             if st.button("❌ Close Details"):
                 st.session_state.selected_candidate = None
+                st.session_state["detailed_analysis_expander"] = False  # reset expander state
 

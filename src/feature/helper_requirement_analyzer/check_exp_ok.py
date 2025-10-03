@@ -20,9 +20,7 @@ def  check_exp_ok_or_not_ok(requirement,resume_text):
 
         # Extract total years from resume
 
-        experience_entries, total_years = extract_experience_entries(resume_text)
-        if total_years == 0:
-            experience_entries, total_years = extract_experience_entries(resume_text)
+        _, total_years = extract_experience_entries(resume_text)
         if total_years == 0:
             total_years = extract_years_from_text(resume_text)
         # if total_years == 0:

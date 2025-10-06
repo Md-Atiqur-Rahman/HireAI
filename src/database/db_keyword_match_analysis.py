@@ -139,17 +139,6 @@ def candidate_match_summary_table(df_agg,per_page):
     col1, col2,  = st.columns([3, 1])
     with col1:
         st.subheader("📊 Candidate Match Summary")
-    # with col3:
-    #     # Download CSV for current page
-    #     csv = df_match_paginated.to_csv(index=False).encode("utf-8")
-    #     st.download_button(
-    #         "📥 Download CSV",
-    #         data=csv,
-    #         file_name=f"candidate_match_page{st.session_state.page_match_summary}.csv",
-    #         mime="text/csv",
-    #         key=f"download_csv_{st.session_state.page_match_summary}"
-    #     )
-
     # --- Table column sizes & headers ---
     col_sizes = [1, 2, 2, 2, 2, 1]
     headers = ["Rank", "Candidate", "Keywords Matched", "Semantic Matches", "Missing Requirements", "Match %"]
@@ -171,7 +160,7 @@ def candidate_match_summary_table(df_agg,per_page):
     st.markdown("---")
 
     # --- Pagination Controls ---
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 4, 1])
     with col1:
         if st.session_state.page_match_summary > 1:
             if st.button("⬅️ Previous", key="prev_match"):
@@ -184,8 +173,7 @@ def candidate_match_summary_table(df_agg,per_page):
                 st.rerun()
     with col2:
         st.text(f"Page {st.session_state.page_match_summary} of {total_pages_match} | Total Records: {total_records_match}")
-    st.markdown("---")
-
+    
     return df_match_paginated
 
 

@@ -64,7 +64,7 @@ def ranked_candidates_by_Score_table(selected_category_id,per_page,total_records
                 st.text(row.get('SummaryText', '-'))
 
   
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 4, 1])
     with col1:
         if st.session_state.page_ranked_candidates > 1:
             if st.button("⬅️ Previous", key="prev_ranked"):

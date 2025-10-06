@@ -83,7 +83,7 @@ def dashboard_page():
 
     
     df_rank_table = ranked_candidates_by_Score_table(selected_category_id,per_page, total_records,total_pages_scores)
-    df_candidates = df_rank_table;  
+    st.session_state.df_rank_table = df_rank_table
 
 
     #----- Candidate Match Summary -----
@@ -92,14 +92,39 @@ def dashboard_page():
         df_aggregated = candidate_match_summary_aggregated(df_raw)
         if df_aggregated is not None and not df_aggregated.empty:
             
-            df_match_paginated = candidate_match_summary_table(df_aggregated,per_page)
-            df_candidates = df_match_paginated
+            candidate_match_summary_table(df_aggregated,per_page)
+            #df_candidates = df_match_paginated
             
 
     # ----- Candidate Scores Summary -----
     df_candidates_Scores = candidate_scores_table(selected_category_id, per_page, total_records,total_pages_scores)
-    df_candidates = df_candidates_Scores
+    st.session_state.df_candidates_Scores = df_candidates_Scores
     
+
+    # Detect which table’s page changed and set it as active
+    if st.session_state.page_ranked_candidates != st.session_state.get("prev_page_ranked", 0):
+        st.session_state.last_table = "rank"
+    # if st.session_state.page_match_summary != st.session_state.get("prev_page_match", 0):
+    #     st.session_state.last_table = "match"
+    if st.session_state.page_scores_summary != st.session_state.get("prev_page_scores", 0):
+        st.session_state.last_table = "scores"
+
+    # Update previous page trackers
+    st.session_state.prev_page_ranked = st.session_state.page_ranked_candidates
+    #st.session_state.prev_page_match = st.session_state.page_match_summary
+    st.session_state.prev_page_scores = st.session_state.page_scores_summary
+
+    # Default (if nothing selected yet)
+    if "last_table" not in st.session_state:
+        st.session_state.last_table = "rank"
+
+    # Choose df_candidates dynamically
+    if st.session_state.last_table == "rank":
+        df_candidates = st.session_state.df_rank_table
+    elif st.session_state.last_table == "scores":
+        df_candidates = st.session_state.df_candidates_Scores
+        
+
 
     #----- Charts -----
     # st.write("🧾 df_candidates info:")
@@ -109,6 +134,7 @@ def dashboard_page():
     show_chart_candidate_by_category(df_candidates, selected_category_id)
     weeklysubmission_topskills_charts(selected_category_id)
     candidate_score_vs_experience(df_candidates)
+
 
     
     

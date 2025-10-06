@@ -70,7 +70,7 @@ def candidate_scores_table(selected_category_id, per_page, total_records,total_p
         cols[7].write(row.get("Status", "Pending"))
         
 
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 4, 1])
     with col1:
         if st.session_state.page_scores_summary > 1:
             if st.button("⬅️ Previous", key="prev_scores"):

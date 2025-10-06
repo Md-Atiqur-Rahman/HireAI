@@ -9,3 +9,4 @@ class Score:
     others: float
     total: float
     status: str
+    is_matched: bool

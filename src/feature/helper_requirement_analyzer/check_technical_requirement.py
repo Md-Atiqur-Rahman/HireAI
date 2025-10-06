@@ -65,12 +65,13 @@ def check_technical_requirement(requirement, resume_text):
     skills_ratio = len(matched) / len(required_skills) if required_skills else 0
     #skills_ok = skills_ratio >= 0.5  # ✅ at least 50% match
 
-    # --- 5. Build status & reason ---
+    # --- 5. Build is_matched status & reason ---
     status = "✅ Match" if skills_ratio >= 0.5 else "❌ Missing"
 
     return RequirementResult(
         requirement=requirement,
         status=status,
+        is_matched= True if skills_ratio >= 0.5 else False,
         category="TechnicalSkills",
         matched_keywords=matched,
         missing_keywords=missing,

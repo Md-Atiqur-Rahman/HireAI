@@ -34,7 +34,8 @@ def summarize_results(results):
 
     # --- Preprocess TechnicalSkills ---
     tech_results = [r for r in results if r.category == "TechnicalSkills"]
-    tech_any_matched = any(r.status.startswith("✅") for r in tech_results)
+    tech_any_matched = any(r.is_matched for r in tech_results)
+
     if tech_results and not tech_any_matched:
         fail_due_to_critical = True
 
@@ -57,8 +58,9 @@ def summarize_results(results):
             for r in cat_results:
                 req = r.requirement
                 status = r.status
+                ismatched = r.is_matched
                 if cat == "TechnicalSkills": 
-                    if r.status.startswith("✅"):
+                    if r.is_matched:
                         earned_weight += per_req_weight
                         cat_earned += per_req_weight
                         matched.append(f"{req} (Matched: {', '.join(r.matched_keywords)})")
@@ -73,7 +75,7 @@ def summarize_results(results):
                             semantic_matches.extend(r.semantic_matched)
 
                 else:  # Education or Others
-                    if status.startswith("✅"):
+                    if r.is_matched:
                         earned_weight += per_req_weight
                         cat_earned += per_req_weight
                         reason = getattr(r, "reason", "Met")
@@ -94,7 +96,8 @@ def summarize_results(results):
             for r in cat_results:
                 req = r.requirement
                 status = r.status
-                if status.startswith("✅"):
+                ismatched = r.is_matched
+                if r.is_matched:
                     earned_weight += weight
                     cat_earned += weight
                     reason = getattr(r, "experience_check", "Met")
@@ -114,7 +117,8 @@ def summarize_results(results):
             for r in cat_results:
                 req = r.requirement
                 status = r.status
-                if status.startswith("✅"):
+                ismatched = r.is_matched
+                if r.is_matched:
                     earned_weight += weight
                     cat_earned += weight
                     matched.append(f"{req} (Met)")
@@ -128,6 +132,8 @@ def summarize_results(results):
         overall_score_display = f"{overall_score}% – ❌ Not Qualified"
         fail_reason = "Critical experience or technical skill missing"
         status = "❌ Not Qualified" 
+        ismatched = False
+        status_Rank = 0
     else:
         status,status_Rank = check_Status(overall_score,False)
         overall_score_display = f"{overall_score}% - ✅ {status}"
@@ -158,6 +164,7 @@ def summarize_results(results):
     technical_skills=category_scores.get("TechnicalSkills", 0),
     others=category_scores.get("Others", 0),
     total=overall_score,
+    is_matched= not fail_due_to_critical,
     status=status)
 
 

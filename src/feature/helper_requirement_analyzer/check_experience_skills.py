@@ -66,12 +66,14 @@ def check_experience_skills(resume_text, requirement, resume_keywords, total_yea
 
     # --- 5. Build status & reason ---
     if exp_ok and skills_ok:
+        is_matched = True
         status = "✅ Match"
         if missing:
             reason = f"User has {total_years} years, matched {len(matched)}/{len(required_skills)} skills (missing: {', '.join(missing)})"
         else:
             reason = f"User has {total_years} years and matched all skills"
     else:
+        is_matched = False
         status = "❌ Missing"
         if not exp_ok:
             if required_years:
@@ -86,6 +88,7 @@ def check_experience_skills(resume_text, requirement, resume_keywords, total_yea
     # --- 6. Return result object ---
     return RequirementResult(
         requirement=requirement,
+        is_matched=is_matched,
         status=status,
         score=0.0,
         experience_check=reason,

@@ -60,6 +60,7 @@ def check_education(resume_text, requirement):
             break
 
     if matched_line:
+        is_matched = True
         status = "✅ Match"
         reason = f"user has {matched_line.strip()}"
     elif edu_lines:
@@ -74,22 +75,26 @@ def check_education(resume_text, requirement):
         best_score = float(sims[best_idx])
 
         if best_score >= 0.45:  # threshold
+            is_matched = True
             status = "✅ Match"
             reason = f"user has {edu_lines[best_idx].strip()}"
             semantic_matched.append(edu_lines[best_idx].strip())
             matched_keywords.append(edu_lines[best_idx].strip())
         else:
+            is_matched = False
             status = "❌ Missing"
             reason = f"Field not specified in requirement, user has {edu_lines[0].strip()}"
             matched_keywords.append(edu_lines[0].strip())
             missing_keywords.append(requirement)
     else:
+        is_matched = False
         status = "❌ Missing"
         reason = f"No degree mentioned matching requirement"
         missing_keywords.append(requirement)
 
     return RequirementResult(
         requirement=requirement,
+        is_matched=is_matched,
         status=status,
         reason=reason,
         category="Education",

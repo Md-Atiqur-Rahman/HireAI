@@ -24,6 +24,7 @@ def check_others_requirement(requirement, resume_text, req_keywords, resume_keyw
     if not resume_skills_sentences:
         return RequirementResult(
             requirement=requirement,
+            is_matched=False,
             status="❌ Missing",
             score=0.0,
             category=category,
@@ -58,6 +59,7 @@ def check_others_requirement(requirement, resume_text, req_keywords, resume_keyw
     return RequirementResult(
         requirement=requirement,
         status="✅ Match" if best_score >= 0.45 else "❌ Missing",
+        is_matched= True if best_score >= 0.45 else False,
         score=round(best_score, 2),
         category=category,
         matched_keywords=matched,

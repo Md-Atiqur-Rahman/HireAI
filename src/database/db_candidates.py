@@ -76,6 +76,7 @@ def save_candidate(Name, email, phone, experience, total_score, skills, summary_
     technical_skills_score = score.technical_skills if score else 0
     others_score = score.others if score else 0
     status = score.status if score else "Not Evaluated"
+    is_matched = score.is_matched if score else False
 
     # Check if email already exists
     cursor.execute("SELECT 1 FROM candidates WHERE Email = ?", (email,))
@@ -87,7 +88,7 @@ def save_candidate(Name, email, phone, experience, total_score, skills, summary_
             UPDATE candidates
             SET Candidate = ?, Contact = ?, Experience = ?, TotalScore = ?, Skills = ?, 
                 SummaryText = ?, CategoryId = ?, UpdatedDate = ?, 
-                ExperienceScore = ?, EducationScore = ?, TechnicalSkillsScore = ?, OthersScore = ?, Status = ?, StatusRank = ?
+                ExperienceScore = ?, EducationScore = ?, TechnicalSkillsScore = ?, OthersScore = ?, Status = ?, IsMatched = ?, StatusRank = ?
             WHERE Email = ?
         """, (
             Name,
@@ -103,6 +104,7 @@ def save_candidate(Name, email, phone, experience, total_score, skills, summary_
             technical_skills_score,
             others_score,
             status,
+            is_matched,
             status_Rank,
             email
         ))
@@ -111,7 +113,7 @@ def save_candidate(Name, email, phone, experience, total_score, skills, summary_
         cursor.execute("""
             INSERT INTO candidates 
             (Candidate, Email, Contact, Experience, TotalScore, Skills, SummaryText, CategoryId,
-             SubmittedOn, UpdatedDate, ExperienceScore, EducationScore, TechnicalSkillsScore, OthersScore, Status, StatusRank)
+             SubmittedOn, UpdatedDate, ExperienceScore, EducationScore, TechnicalSkillsScore, OthersScore, Status, IsMatched, StatusRank)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             Name,
@@ -129,6 +131,7 @@ def save_candidate(Name, email, phone, experience, total_score, skills, summary_
             technical_skills_score,
             others_score,
             status,
+            is_matched,
             status_Rank
         ))
 

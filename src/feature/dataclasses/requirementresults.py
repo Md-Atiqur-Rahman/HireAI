@@ -4,6 +4,7 @@ from typing import List, Optional
 @dataclass
 class RequirementResult:
     requirement: str
+    is_matched: bool
     status: str
     category: str
     matched_keywords: List[str] = field(default_factory=list)

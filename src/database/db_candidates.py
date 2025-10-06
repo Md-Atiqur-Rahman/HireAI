@@ -114,7 +114,7 @@ def save_candidate(Name, email, phone, experience, total_score, skills, summary_
             INSERT INTO candidates 
             (Candidate, Email, Contact, Experience, TotalScore, Skills, SummaryText, CategoryId,
              SubmittedOn, UpdatedDate, ExperienceScore, EducationScore, TechnicalSkillsScore, OthersScore, Status, IsMatched, StatusRank)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             Name,
             email,

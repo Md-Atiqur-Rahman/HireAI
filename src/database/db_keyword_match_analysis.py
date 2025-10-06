@@ -120,7 +120,9 @@ def candidate_match_summary_table(df_agg,per_page):
     if df_agg is None or df_agg.empty:
         st.warning("No candidate match summary available.")
         return
-
+    # --- ✅ Sort by highest MatchPercent first ---
+    df_agg = df_agg.sort_values(by="MatchPercent", ascending=False).reset_index(drop=True)
+    
     # --- Pagination settings ---
     total_records_match = len(df_agg)
     total_pages_match = math.ceil(total_records_match / per_page)
@@ -138,7 +140,7 @@ def candidate_match_summary_table(df_agg,per_page):
     # --- Table Header ---
     col1, col2,  = st.columns([3, 1])
     with col1:
-        st.subheader("📊 Candidate Match Summary")
+        st.subheader("📊 Candidate Keyword Match Analysis")
     # --- Table column sizes & headers ---
     col_sizes = [1, 2, 2, 2, 2, 1]
     headers = ["Rank", "Candidate", "Keywords Matched", "Semantic Matches", "Missing Requirements", "Match %"]

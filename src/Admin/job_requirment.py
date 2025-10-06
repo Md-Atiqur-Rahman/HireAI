@@ -181,7 +181,6 @@ def job_requirements_page():
                 "TechnicalSkills": st.session_state.tech_skills,
                 "Others": st.session_state.other_reqs
             }
-            print("requirements--------->",json.dumps(requirements))
             save_job_requirement(selected_category_id, requirements)
             st.success("✅ Requirements saved successfully!")
             clear_all_requirements()

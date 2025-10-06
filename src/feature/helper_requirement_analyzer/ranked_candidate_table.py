@@ -16,7 +16,7 @@ def ranked_candidates_by_Score_table(selected_category_id,per_page,total_records
     
     col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
-        st.subheader("🏆 Ranked Candidates by Score")
+        st.subheader("🏆 Ranked Candidate Overview")
     with col3:
          # --- Download CSV ---
         csv = df.to_csv(index=False).encode("utf-8")
@@ -28,9 +28,9 @@ def ranked_candidates_by_Score_table(selected_category_id,per_page,total_records
         )
 
 
-    col_sizes = [1, 3, 3, 2, 2, 2]  # Rank, Candidate, Email, Experience, Score, Action
+    col_sizes = [1, 3, 3, 2, 2, 2, 2]  # Rank, Candidate, Email, Experience, Score, Action
     columns = st.columns(col_sizes)
-    headers = ["Rank", "Candidate", "Email", "Experience", "Score", "Action"]
+    headers = ["Rank", "Candidate", "Email", "Experience", "Score", "Status", "Action"]
     for col, header in zip(columns, headers):
         col.markdown(f"**{header}**")
 
@@ -43,7 +43,7 @@ def ranked_candidates_by_Score_table(selected_category_id,per_page,total_records
         cols[2].write(row.get("Email", "-"))
         cols[3].write(f"{row.get('Experience', 0)} yrs")
         cols[4].write(f"{row.get('TotalScore', 0)} %")
-
+        cols[5].write(row.get("Status", "Not Evaluated"))
         # Unique key for this row
         row_key = f"row_{rank}"
         
@@ -52,7 +52,7 @@ def ranked_candidates_by_Score_table(selected_category_id,per_page,total_records
             st.session_state[row_key] = False
 
         # "View" button toggles the expanded state
-        if cols[5].button("View", key=f"btn_{row_key}"):
+        if cols[6].button("View", key=f"btn_{row_key}"):
             st.session_state[row_key] = not st.session_state[row_key]
 
         # If this row is expanded, show the expander

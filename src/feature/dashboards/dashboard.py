@@ -79,14 +79,14 @@ def dashboard_page():
     #--- KPI Cards ---
     kpi_total_card(selected_category_id, total_records)
 
-    # ----- Ranked Candidates Table -----
+    # ----- Ranked Candidate Overview Table -----
 
     
     df_rank_table = ranked_candidates_by_Score_table(selected_category_id,per_page, total_records,total_pages_scores)
     st.session_state.df_rank_table = df_rank_table
 
 
-    #----- Candidate Match Summary -----
+    #----- Candidate Keyword Match Analysis  -----
     df_raw = get_raw_candidate_data()
     if df_raw is not None and not df_raw.empty:
         df_aggregated = candidate_match_summary_aggregated(df_raw)

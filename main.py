@@ -20,16 +20,27 @@ if "page" not in st.session_state:
 # Sidebar CSS
 st.markdown("""
 <style>
+/* Make sidebar wider */
+section[data-testid="stSidebar"] {
+    width: 350px !important;          /* Set custom width */
+    min-width: 350px !important;      /* Prevent it from shrinking */
+    max-width: 350px !important;      /* Keep consistent size */
+}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+<style>
 [data-testid="stSidebar"] {
     background-color: #1e1e2f;
-    padding: 20px 10px;
+    padding: 30px 20px;
 }
 .sidebar-logo {text-align:center;margin-bottom:20px;}
 .sidebar-title {font-size:22px;font-weight:bold;text-align:center;color:#5dade2;margin-bottom:25px;}
 
 /* Make all buttons same size */
 [data-testid="stSidebar"] .stButton>button {
-    width: 200px !important; /* fixed width */
+    width: 250px !important; /* fixed width */
     height: 50px !important; /* fixed height */
     margin: 8px 0 !important;
     border-radius: 12px !important;
@@ -54,8 +65,8 @@ with st.sidebar:
 
     menu_items = {
     "🏠 Home": "home",                        # Home page
-    "📄 Resume Analyzer": "analyzer",         # Analyze a single resume
-    "🔍 All Resumes Analyzer": "allanalyzer", # Analyze multiple resumes
+    "🔍 Resume Analyzer": "analyzer",         # Analyze a single resume
+    "📂 Batch Resume Analyzer": "allanalyzer", # Analyze multiple resumes
     "📊 Dashboard": "dashboard",              # Dashboard overview
     "📝 Add Requirements": "JobRequirements", # Add new job requirements
     "📂 Add Categories": "JobCategories"      # Add new job categories

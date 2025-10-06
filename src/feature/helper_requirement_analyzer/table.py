@@ -67,7 +67,7 @@ def candidate_scores_table(selected_category_id, per_page, total_records,total_p
         cols[4].markdown(format_score(row.get("TechnicalSkillsScore", 0)), unsafe_allow_html=True)
         cols[5].markdown(format_score(row.get("OthersScore", 0)), unsafe_allow_html=True)
         cols[6].markdown(format_score(row.get("TotalScore", 0)), unsafe_allow_html=True)
-        cols[7].write(row.get("Status", "Pending"))
+        cols[7].write(row.get("Status", "Not Evaluated"))
         
 
     col1, col2, col3 = st.columns([1, 4, 1])

@@ -3,6 +3,7 @@ import json
 import sqlite3
 import pandas as pd
 
+from src.feature.dataclasses.Score import Score
 from src.database.db_config import get_connection
 
 __all__ = [
@@ -61,38 +62,89 @@ def add_submitted_on_column():
     conn.close()
 
 
-
-def save_candidate(Name, email, phone, experience, total_score, skills, summary_text, category_id):
+def save_candidate(Name, email, phone, experience, total_score, skills, summary_text, category_id, score: Score = None, raw_rows=None):
     conn = get_connection()
     cursor = conn.cursor()
 
+    # System-generated current date
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    skills_str = json.dumps(skills) if isinstance(skills, list) else str(skills)
+
     # Check if email already exists
     cursor.execute("SELECT 1 FROM candidates WHERE Email = ?", (email,))
-    if cursor.fetchone():
-        conn.close()
-        return False  # Email exists, don't save
-    skills_str = json.dumps(skills) if isinstance(skills, list) else str(skills)
-        # System-generated current date
-    submitted_on = datetime.now().strftime("%Y-%m-%d")
-    cursor.execute("""
-        INSERT INTO candidates 
-        (Candidate, Email, Contact, Experience, TotalScore, Skills, SummaryText, CategoryId,SubmittedOn)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)
-    """, (
-        Name,
-        email,
-        phone,
-        experience,
-        total_score,
-        skills_str,
-        summary_text,
-        category_id,
-        submitted_on
-    ))
+    exists = cursor.fetchone()
 
+    if exists:
+        # Update existing record
+        cursor.execute("""
+            UPDATE candidates
+            SET Candidate = ?, Contact = ?, Experience = ?, TotalScore = ?, Skills = ?, 
+                SummaryText = ?, CategoryId = ?, UpdatedDate = ?, 
+                ExperienceScore = ?, EducationScore = ?, TechnicalSkillsScore = ?, OthersScore = ?, Status = ?
+            WHERE Email = ?
+        """, (
+            Name,
+            phone,
+            experience,
+            total_score,
+            skills_str,
+            summary_text,
+            category_id,
+            now,
+            score.experience if score else 0,
+            score.education if score else 0,
+            score.technical_skills if score else 0,
+            score.others if score else 0,
+            score.status if score else "Not Evaluated",
+            email
+        ))
+    else:
+        # Insert new record
+        cursor.execute("""
+            INSERT INTO candidates 
+            (Candidate, Email, Contact, Experience, TotalScore, Skills, SummaryText, CategoryId, SubmittedOn,
+             UpdatedDate, ExperienceScore, EducationScore, TechnicalSkillsScore, OthersScore, Status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            Name,
+            email,
+            phone,
+            experience,
+            total_score,
+            skills_str,
+            summary_text,
+            category_id,
+            now,
+            now,  # UpdatedDate same as SubmittedOn for new record
+            score.experience if score else 0,
+            score.education if score else 0,
+            score.technical_skills if score else 0,
+            score.others if score else 0,
+            score.status if score else "Not Evaluated"
+        ))
+
+    # --- Save raw_rows for candidate ---
+    if raw_rows:
+        # Optional: remove old rows for this candidate to avoid duplicates
+        cursor.execute("DELETE FROM candidate_requirements WHERE candidate_email = ?", (email,))
+        
+        for row in raw_rows:
+            cursor.execute("""
+                INSERT INTO candidate_requirements 
+                (candidate_email, category, requirement, keywords_matched, semantic_matches, missing_requirements, match_percent)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                email,
+                row["Category"],
+                row["Requirement"],
+                row["KeywordsMatched"],
+                row["SemanticMatches"],
+                row["MissingRequirements"],
+                row["MatchPercent"]
+            ))
     conn.commit()
     conn.close()
-    return True  # Successfully saved
+    return True
 
 from datetime import datetime
 

@@ -28,7 +28,8 @@ def check_others_requirement(requirement, resume_text, req_keywords, resume_keyw
             score=0.0,
             category=category,
             matched_keywords=set(),
-            missing_keywords=req_keywords
+            missing_keywords=req_keywords,
+            semantic_matched=set()
         )
 
     # ---- Encode embeddings ----
@@ -39,8 +40,20 @@ def check_others_requirement(requirement, resume_text, req_keywords, resume_keyw
     sims = util.cos_sim(req_emb, res_embs)[0]   # shape: (N,)
     best_score = float(torch.max(sims)) if sims.numel() > 0 else 0.0
 
+    
     matched = req_keywords & resume_keywords
     missing = req_keywords - resume_keywords
+
+    semantic_matched = set()
+    for kw in missing:
+        kw_emb = sbert_model.encode(kw, convert_to_tensor=True)
+        similarity = util.cos_sim(kw_emb, res_embs)[0]
+        if float(similarity.max()) >= 0.45:
+            semantic_matched.add(kw)
+    
+    # Remove semantic matches from missing
+    missing -= semantic_matched
+    matched |= semantic_matched  # include semantic matches in overall matched
 
     return RequirementResult(
         requirement=requirement,
@@ -48,5 +61,6 @@ def check_others_requirement(requirement, resume_text, req_keywords, resume_keyw
         score=round(best_score, 2),
         category=category,
         matched_keywords=matched,
-        missing_keywords=missing
+        missing_keywords=missing,
+        semantic_matched=semantic_matched
     )

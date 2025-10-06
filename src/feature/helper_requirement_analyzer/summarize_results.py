@@ -1,3 +1,7 @@
+import pandas as pd
+from src.feature.dataclasses.Score import Score
+
+
 def summarize_results(results):
     """
     Returns overall score and detailed summary grouped by category.
@@ -18,6 +22,13 @@ def summarize_results(results):
     missing = []
     matched_skills = []
     missing_skills = []
+    semantic_matches = []
+    category_scores = {
+        "Experience": 0,
+        "Education": 0,
+        "TechnicalSkills": 0,
+        "Others": 0
+    }
 
     fail_due_to_critical = False
 
@@ -42,67 +53,88 @@ def summarize_results(results):
             if n_reqs == 0:
                 continue
             per_req_weight = weight / n_reqs
+            cat_earned = 0
             for r in cat_results:
                 req = r.requirement
                 status = r.status
                 if cat == "TechnicalSkills": 
                     if r.status.startswith("✅"):
                         earned_weight += per_req_weight
+                        cat_earned += per_req_weight
                         matched.append(f"{req} (Matched: {', '.join(r.matched_keywords)})")
                         matched_skills.extend(r.matched_keywords)
+                        # collect semantic matches if present
+                        if hasattr(r, "semantic_matched") and r.semantic_matched:
+                            semantic_matches.extend(r.semantic_matched)
                     else:
                         missing.append(f"{req} (No {', '.join(r.missing_keywords)} mentioned)")
                         missing_skills.extend(r.missing_keywords)
+                        if hasattr(r, "semantic_matched") and r.semantic_matched:
+                            semantic_matches.extend(r.semantic_matched)
+
                 else:  # Education or Others
                     if status.startswith("✅"):
                         earned_weight += per_req_weight
+                        cat_earned += per_req_weight
                         reason = getattr(r, "reason", "Met")
                         matched.append(f"{req} ({reason})")
+                        if hasattr(r, "semantic_matched") and r.semantic_matched:
+                            semantic_matches.extend(r.semantic_matched)
                     else:
+                        if hasattr(r, "semantic_matched") and r.semantic_matched:
+                            semantic_matches.extend(r.semantic_matched)
                         if cat == "Education":
                             reason = getattr(r, "reason", "Not mentioned")
                             missing.append(f"{req} ({reason})")
                         else: missing.append(f"{req} (Not mentioned)")
+            category_scores[cat] = round((cat_earned / weight) * 100, 1) if weight > 0 else 0
 
         elif cat == "Experience":
+            cat_earned = 0
             for r in cat_results:
                 req = r.requirement
                 status = r.status
                 if status.startswith("✅"):
                     earned_weight += weight
+                    cat_earned += weight
                     reason = getattr(r, "experience_check", "Met")
                     matched.append(f"{req} ({reason})")
                     matched_skills.extend(r.matched_keywords)
+                    if hasattr(r, "semantic_matched") and r.semantic_matched:
+                        semantic_matches.extend(r.semantic_matched)
                 else:
                     fail_due_to_critical = True
                     reason = getattr(r, "experience_check", "Not mentioned")
                     missing.append(f"{req} ({reason})")
                     missing_skills.extend(r.missing_keywords)
-
+                    if hasattr(r, "semantic_matched") and r.semantic_matched:
+                        semantic_matches.extend(r.semantic_matched)
+            category_scores["Experience"] = round((cat_earned / weight) * 100, 1) if weight > 0 else 0
         else:
             for r in cat_results:
                 req = r.requirement
                 status = r.status
                 if status.startswith("✅"):
                     earned_weight += weight
+                    cat_earned += weight
                     matched.append(f"{req} (Met)")
                 else:
                     missing.append(f"{req} (Not mentioned)")
 
     overall_score = round((earned_weight / total_weight) * 100, 1) if total_weight > 0 else 0
-    # overall_score_display = (
-    #     "FAIL (Critical experience or technical skill missing)"
-    #     if fail_due_to_critical else f"{overall_score}%"
-    # )
+    
+
     if fail_due_to_critical:
-        overall_score_display = f"{overall_score}% – ❌ FAIL"
+        overall_score_display = f"{overall_score}% – ❌ Not Qualified"
         fail_reason = "Critical experience or technical skill missing"
+        status = "❌ Not Qualified" 
     else:
         overall_score_display = f"{overall_score}%"
         fail_reason = None
+        status = "Qualified" 
 
 
-
+    semantic_matches = sorted(set(semantic_matches))
     matched_skills = sorted(set(matched_skills))
     missing_skills = sorted(set(missing_skills))
 
@@ -117,5 +149,33 @@ def summarize_results(results):
     ]
     if fail_reason:
         lines.append(f"Reason: {fail_reason}")
-    return overall_score, "\n".join([line for line in lines if line])
+    
+    summary_text = "\n".join([line for line in lines if line])
+    score_obj = Score(
+    experience=category_scores.get("Experience", 0),
+    education=category_scores.get("Education", 0),
+    technical_skills=category_scores.get("TechnicalSkills", 0),
+    others=category_scores.get("Others", 0),
+    total=overall_score,
+    status=status)
+
+
+     # --- Build grouped DataFrame per category ---
+    raw_rows = []
+    for cat, cat_results in categories.items():
+        for r in cat_results:
+            total_keywords = len(r.matched_keywords) + len(r.missing_keywords)
+            match_percent = round(100 * len(r.matched_keywords) / total_keywords, 1) if total_keywords > 0 else 0
+            raw_rows.append({
+                "Category": cat,
+                "Requirement": r.requirement,
+                "KeywordsMatched": ", ".join(r.matched_keywords),
+                "SemanticMatches": ", ".join(getattr(r, "semantic_matched", [])),
+                "MissingRequirements": ", ".join(r.missing_keywords),
+                "MatchPercent": match_percent
+            })
+    #df_grouped = pd.DataFrame(raw_rows)
+    #semantic_matched
+    #semantic_matched
+    return overall_score, summary_text, score_obj,raw_rows
 

@@ -2,7 +2,7 @@ Name: Shafiq Rahman
 Email: shafiq.rahman@example.com
 Contact: +8801711334455
 Summary:
-Full Stack Developer with 5 years of experience in .NET.
+Full Stack Developer with 5 years of experience in .NET,SQL .
 
 Experience:
 Backend Engineer | SoftTech Solutions
@@ -13,6 +13,11 @@ Education:
 B.Sc. in Computer Science
 University of Rajshahi, Bangladesh
 2019    
+
+Master’s degree in Computer Science
+University of Dhaka, Bangladesh
+2018
+
 
 Skills:
 MVC,

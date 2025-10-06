@@ -1,10 +1,14 @@
 import re
 
+from sentence_transformers import SentenceTransformer, util
+import torch
+
 from src.feature.dataclasses.requirementresults import RequirementResult
 
 # -----------------------
 # Check Education Requirement (Improved)
 # -----------------------
+sbert_model = SentenceTransformer("all-MiniLM-L6-v2")
 def check_education(resume_text, requirement):
     """
     Checks if a required degree AND relevant field exist in the resume.
@@ -46,6 +50,9 @@ def check_education(resume_text, requirement):
             edu_lines.append(clean_line)
 
     matched_line = None
+    matched_keywords = []
+    missing_keywords = []
+    semantic_matched = []
     for line in edu_lines:
         line_lower = line.lower()
         if any(f in line_lower for f in req_fields):
@@ -56,15 +63,37 @@ def check_education(resume_text, requirement):
         status = "✅ Match"
         reason = f"user has {matched_line.strip()}"
     elif edu_lines:
-        status = "❌ Missing"
-        reason = f"Field not specified in requirement, user has {edu_lines[0].strip()}"  # Degree present but field mismatch
+        # status = "❌ Missing"
+        # reason = f"Field not specified in requirement, user has {edu_lines[0].strip()}"  # Degree present but field mismatch
+        # ---- Semantic similarity check if no direct match ----
+        req_emb = sbert_model.encode(requirement, convert_to_tensor=True)
+        res_embs = sbert_model.encode(edu_lines, convert_to_tensor=True)
+        sims = util.cos_sim(req_emb, res_embs)[0]
+
+        best_idx = int(torch.argmax(sims))
+        best_score = float(sims[best_idx])
+
+        if best_score >= 0.45:  # threshold
+            status = "✅ Match"
+            reason = f"user has {edu_lines[best_idx].strip()}"
+            semantic_matched.append(edu_lines[best_idx].strip())
+            matched_keywords.append(edu_lines[best_idx].strip())
+        else:
+            status = "❌ Missing"
+            reason = f"Field not specified in requirement, user has {edu_lines[0].strip()}"
+            matched_keywords.append(edu_lines[0].strip())
+            missing_keywords.append(requirement)
     else:
         status = "❌ Missing"
         reason = f"No degree mentioned matching requirement"
+        missing_keywords.append(requirement)
 
     return RequirementResult(
         requirement=requirement,
         status=status,
         reason=reason,
-        category="Education"
+        category="Education",
+        matched_keywords=matched_keywords,
+        missing_keywords=missing_keywords,
+        semantic_matched=semantic_matched
     )

@@ -1,4 +1,6 @@
 import streamlit as st
+from src.database.db_candidate_requirements import create_candidate_requirements_table
+from src.database.db_alter_candidates_table import alter_candidates_table
 from src.feature.home import home_page
 from src.Admin.job_requirment import job_requirements_page
 from src.feature.dashboards.dashboard import dashboard_page
@@ -64,7 +66,8 @@ with st.sidebar:
         clicked = st.button(label, key=btn_key)
         if clicked:
             st.session_state.page = page_name
-
+alter_candidates_table()
+create_candidate_requirements_table()
 # Page routing
 page = st.session_state.page
 if page == "home":

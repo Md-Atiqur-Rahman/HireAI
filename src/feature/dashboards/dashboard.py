@@ -6,7 +6,9 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from src.feature.helper_requirement_analyzer.table import ranked_candidates_by_Score_table
+# from src.database.db_keyword_match_analysis import candidate_match_summary_aggregated, candidate_match_summary_table, get_raw_candidate_data
+from src.database.db_keyword_match_analysis import candidate_match_summary_aggregated, candidate_match_summary_table, get_raw_candidate_data
+from src.feature.helper_requirement_analyzer.table import candidate_scores_table, ranked_candidates_by_Score_table
 from src.feature.dashboards.charts.candidate_score_experience_chart import candidate_score_vs_experience
 from src.feature.dashboards.charts.weekly_submission_to_skillis_chart import weeklysubmission_topskills_charts
 from src.feature.dashboards.charts.candidate_category_chart import show_chart_candidate_by_category
@@ -53,6 +55,27 @@ def dashboard_page():
     ## Chart starts
     # --- Kpi Cards ---
     kpi_total_card(selected_category_id,total_records)
+    # df_raw = get_raw_candidate_data()
+    #candidate_match_summary_paginated(df_raw)
+    # candidate_match_summary_aggregated(df_raw)
+    # candidate_match_summary_scores(df_raw)
+    # from src.database.db_keyword_match_analysis import get_raw_candidate_data, candidate_match_summary_aggregated
+
+    # 1. Get raw candidate requirement rows from DB
+    df_raw = get_raw_candidate_data()
+    if df_raw is None or df_raw.empty:
+        st.warning("No raw candidate data available.")
+    else:
+        # 2. Aggregate numeric scores
+        df_aggregated = candidate_match_summary_aggregated(df_raw)
+        if df_aggregated is None or df_aggregated.empty:
+            st.warning("No aggregated candidate match summary available.")
+        else:
+            candidate_match_summary_table(df_aggregated)
+
+
+    # --- Candidate Scores Table ---
+    candidate_scores_table(df, total_records)
     # --- Candidate by category chart ---
     show_chart_candidate_by_category(df,selected_category_id)
      # ---------------- Weekly Submission and Topskills charts ----------------

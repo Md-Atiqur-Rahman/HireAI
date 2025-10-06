@@ -94,8 +94,9 @@ def evaluate_resume(resume_text, job_requirements):
                     matched_skills.extend(check.matched_keywords)
 
     # --- summarization ---
-    overall_score, summary_text = summarize_results(results)
-
+    #overall_score, summary_text,score_obj = summarize_results(results)
+    overall_score, summary_text, score_obj, raw_rows = summarize_results(results)
+    
     # --- total experience extraction ---
     total_experience = 0.0
     for r in results:
@@ -107,4 +108,4 @@ def evaluate_resume(resume_text, job_requirements):
 
 
     # শুধুমাত্র matched skills return
-    return summary_text, total_experience, overall_score, list(set(matched_skills))
+    return summary_text, total_experience, overall_score, list(set(matched_skills)), score_obj,raw_rows

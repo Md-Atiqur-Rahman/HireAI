@@ -3,11 +3,12 @@ Name: John Doe
 Email: john.doe@example.com
 Contact: +880123456789
 Summary:
-Junior Developer with 1 year of experience in C# and SQL.
+Full Stack Developer with 1 years of experience in .Net and SQL.
 Worked on multiple enterprise applications.
 Skills: ASP.NET Core, MVC, Web API, MS SQL,Azure/AWS,Git version control,Angular
 Education:
 B.Sc. in Computer Science
+Master’s degree in Computer Science
 Others: Project Management skills on Agile Scrum, Fluent in oral and written communication in English  
 
 

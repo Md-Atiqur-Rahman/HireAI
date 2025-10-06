@@ -15,6 +15,10 @@ B.Sc. in Computer Science
 University of Chittagong, Bangladesh
 2017
 
+Master’s degree in Computer Science
+University of Dhaka, Bangladesh
+2018
+
 Skills:
 ASP.NET Core, MVC, Web API, MS SQL, Angular
 

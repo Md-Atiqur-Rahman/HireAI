@@ -116,7 +116,8 @@ def multiple_resume_analysis():
             email = extract_email(resume_text)
             phone = extract_phone(resume_text)
             name =extract_name_from_text(resume_text,email)
-            summary_text, total_exp, total_score,technicalskills = evaluate_resume(resume_text, st.session_state.jd_file)
+            # summary_text, total_exp, total_score,technicalskills = evaluate_resume(resume_text, st.session_state.jd_file)
+            summary_text, total_exp, total_score,technicalskills,score_obj,raw_rows = evaluate_resume(resume_text, st.session_state.jd_file)
             print("skills---->",technicalskills)
             experience = total_exp
             total_score = total_score
@@ -130,7 +131,9 @@ def multiple_resume_analysis():
                 "SummaryText":summary_text
             }
 
-            save_candidate(name, email, phone, experience, total_score, technicalskills, summary_text, selected_category_id)
+            # save_candidate(name, email, phone, experience, total_score, technicalskills, summary_text, selected_category_id)
+            #save_candidate(name, email, phone, total_exp, total_score,technicalskills , summary_text, selected_category_id,score_obj)
+            save_candidate(name, email, phone, total_exp, total_score,technicalskills , summary_text, selected_category_id,score_obj,raw_rows)
 
 
             st.session_state.results.append(result)

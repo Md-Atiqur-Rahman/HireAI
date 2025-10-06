@@ -5,9 +5,10 @@ Contact: +880199876543
 Summary:
 Full Stack Developer with 4 years of experience in .Net ,C#, VB, SQL.
 Worked on multiple enterprise applications.
-Skills: C#, VB, HTML, CSS, SQL
+Skills: C#, VB, HTML, CSS, SQL,Web API,MVC,React,Azure/AWS,Git
 Education:
 B.Sc. in Computer Science
+Master’s degree in Computer Science
 Others: Project Management skills on Agile Scrum, Fluent in oral and written communication in English  
 
 

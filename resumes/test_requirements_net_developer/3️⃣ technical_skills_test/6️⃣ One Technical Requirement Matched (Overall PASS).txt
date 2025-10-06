@@ -3,7 +3,7 @@ Email: farhan.ahmed@example.com
 Contact: +8801911445566
 Summary:
 
-Full Stack Developer with 5 years of experience in .NET.
+Full Stack Developer with 5 years of experience in .NET,SQL.
 Experience:
 Frontend Engineer | BrightSoft Ltd.
 2019 – 2023
@@ -14,8 +14,12 @@ B.Sc. in Computer Science
 BUET, Bangladesh
 2018
 
+Master’s degree in Computer Science
+University of Dhaka, Bangladesh
+2018
+
 Skills:
-Angular, TypeScript, JavaScript
+Angular, TypeScript, JavaScript,(Azure/AWS) and Git 
 
 Others:
 - Project Management skills on Agile Scrum

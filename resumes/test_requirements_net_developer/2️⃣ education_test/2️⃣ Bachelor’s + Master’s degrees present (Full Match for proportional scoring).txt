@@ -5,7 +5,7 @@ Contact: +880199876543
 Summary:
 Full Stack Developer with 5 years of experience in ASP.NET Core, SQL, and Angular.
 Led projects using .NET Core and Angular.
-Skills: C#, VB, SQL, Angular, Azure
+Skills: C#, VB, SQL, Angular, Azure,ASP.NET Core, MVC,Git version control.
 Education:
 B.Sc. in Computer Science
 Ahsanullah University of Science and Technology (AUST), Bangladesh

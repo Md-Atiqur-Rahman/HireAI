@@ -26,7 +26,7 @@ def check_technical_requirement(requirement, resume_text):
 
     matched = []
     missing = []
-
+    semantic_matched = []
     resume_skills_sentences = []
     for sent in resume_sentences:
         if "," in sent and len(sent.split()) < 20:  # heuristic: likely a skills list
@@ -56,6 +56,7 @@ def check_technical_requirement(requirement, resume_text):
             test = float(sims.max())
             if float(sims.max()) >= 0.5:  # semantic threshold
                 matched.append(skill)
+                semantic_matched.append(skill) 
                 found = True
         if not found:
             missing.append(skill)
@@ -72,5 +73,6 @@ def check_technical_requirement(requirement, resume_text):
         status=status,
         category="TechnicalSkills",
         matched_keywords=matched,
-        missing_keywords=missing
+        missing_keywords=missing,
+        semantic_matched=semantic_matched  
     )

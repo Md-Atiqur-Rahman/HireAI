@@ -14,6 +14,10 @@ B.Sc. in Computer Science
 Ahsanullah University of Science and Technology (AUST), Bangladesh
 2018
 
+Master’s degree in Computer Science
+University of Dhaka, Bangladesh
+2018
+
 Skills:
 ASP.NET Core, MVC, Web API, MS SQL
 

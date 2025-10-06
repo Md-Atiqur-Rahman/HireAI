@@ -31,8 +31,8 @@
 🏆 Ranked Candidates by Fit Score
 
 
-
-
+Experienced in C#, VB.NET, and SQL Server.
+per_req_weight = 30 / 3 = 10 points
 
 
 🧠 **Core Features**

@@ -123,15 +123,16 @@ def summarize_results(results):
 
     overall_score = round((earned_weight / total_weight) * 100, 1) if total_weight > 0 else 0
     
-
+    status_Rank = 0
     if fail_due_to_critical:
         overall_score_display = f"{overall_score}% – ❌ Not Qualified"
         fail_reason = "Critical experience or technical skill missing"
         status = "❌ Not Qualified" 
     else:
-        overall_score_display = f"{overall_score}%"
+        status,status_Rank = check_Status(overall_score,False)
+        overall_score_display = f"{overall_score}% - ✅ {status}"
         fail_reason = None
-        status = "Qualified" 
+        
 
 
     semantic_matches = sorted(set(semantic_matches))
@@ -177,5 +178,14 @@ def summarize_results(results):
     #df_grouped = pd.DataFrame(raw_rows)
     #semantic_matched
     #semantic_matched
-    return overall_score, summary_text, score_obj,raw_rows
+    return overall_score, summary_text, score_obj,raw_rows,status_Rank
 
+def check_Status(overall_score, fail_due_to_critical=False):
+    if fail_due_to_critical:
+        return "Not Qualified",0
+    elif overall_score >= 85:
+        return "Highly Qualified",3
+    elif overall_score >= 60:
+        return "Qualified",2
+    else:
+        return "Not Qualified",1

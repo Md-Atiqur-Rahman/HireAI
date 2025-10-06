@@ -6,6 +6,9 @@ import streamlit as st
 
 
 def candidate_score_vs_experience(df):
+    if df is None or df.empty:
+        st.warning("No candidate data available for score distribution chart.")
+        return
     col1, col2 = st.columns([2, 2])  # center column wider 
     with col1:
         # --- Candidate Score Distribution ---

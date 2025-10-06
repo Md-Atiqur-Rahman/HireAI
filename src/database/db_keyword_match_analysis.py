@@ -112,7 +112,7 @@ import pandas as pd
 import streamlit as st
 import math
 
-def candidate_match_summary_table(df_agg):
+def candidate_match_summary_table(df_agg,per_page):
     """
     Display candidate match summary in a paginated, category-wise table.
     Columns: Candidate | Keywords Matched | Semantic Matches | Missing Requirements | Match %
@@ -122,59 +122,71 @@ def candidate_match_summary_table(df_agg):
         return
 
     # --- Pagination settings ---
-    per_page = 5
-    total_records = len(df_agg)
-    total_pages = math.ceil(total_records / per_page)
-    current_page = st.session_state.get("candidate_summary_page", 1)
-    offset = (current_page - 1) * per_page
+    total_records_match = len(df_agg)
+    total_pages_match = math.ceil(total_records_match / per_page)
+    offset_match = (st.session_state.page_match_summary - 1) * per_page
+    df_match_paginated = df_agg.iloc[offset_match:offset_match+per_page]
 
-    # --- Table Header ---
-    col1, col2, col3 = st.columns([2, 1, 1])
-    with col1:
-        st.subheader("📊 Candidate Match Summary")
-    with col3:
-        # Download CSV for current page
-        csv = df_agg.iloc[offset:offset+per_page].to_csv(index=False).encode("utf-8")
-        st.download_button(
-            "📥 Download CSV",
-            data=csv,
-            file_name=f"candidate_match_page{current_page}.csv",
-            mime="text/csv",
-            key=f"download_csv_{current_page}"
+    if not df_match_paginated.empty:
+        df_match_paginated["Rank"] = range(
+            offset_match + 1,
+            offset_match + len(df_match_paginated) + 1
         )
 
+    df_match_paginated["Rank"] = range(offset_match + 1, offset_match + len(df_match_paginated) + 1)
+
+    # --- Table Header ---
+    col1, col2,  = st.columns([3, 1])
+    with col1:
+        st.subheader("📊 Candidate Match Summary")
+    # with col3:
+    #     # Download CSV for current page
+    #     csv = df_match_paginated.to_csv(index=False).encode("utf-8")
+    #     st.download_button(
+    #         "📥 Download CSV",
+    #         data=csv,
+    #         file_name=f"candidate_match_page{st.session_state.page_match_summary}.csv",
+    #         mime="text/csv",
+    #         key=f"download_csv_{st.session_state.page_match_summary}"
+    #     )
+
     # --- Table column sizes & headers ---
-    col_sizes = [2, 2, 2, 2, 1]
-    headers = ["Candidate", "Keywords Matched", "Semantic Matches", "Missing Requirements", "Match %"]
+    col_sizes = [1, 2, 2, 2, 2, 1]
+    headers = ["Rank", "Candidate", "Keywords Matched", "Semantic Matches", "Missing Requirements", "Match %"]
     cols = st.columns(col_sizes)
     for col, header in zip(cols, headers):
         col.markdown(f"**{header}**")
 
     # --- Table rows ---
-    for idx, row in df_agg.iloc[offset:offset+per_page].iterrows():
+    for idx, row in df_match_paginated.iterrows():
         cols = st.columns(col_sizes)
-        cols[0].write(row["Candidate"])
-        cols[1].write(row["KeywordsMatched"])
-        cols[2].write(row["SemanticMatches"])
-        cols[3].write(row["MissingRequirements"])
-        cols[4].write(f"{row['MatchPercent']:.2f} %")
+        rank = row["Rank"]
+        cols[0].write(rank)
+        cols[1].write(row["Candidate"])
+        cols[2].write(row["KeywordsMatched"])
+        cols[3].write(row["SemanticMatches"])
+        cols[4].write(row["MissingRequirements"])
+        cols[5].write(f"{row['MatchPercent']:.2f} %")
 
     st.markdown("---")
 
-    # --- Pagination controls ---
-    col_prev, col_page, col_next = st.columns([1, 2, 1])
-    with col_prev:
-        if current_page > 1:
-            if st.button("⬅️ Previous", key=f"prev_page_{current_page}"):
-                st.session_state["candidate_summary_page"] = current_page - 1
-                st.experimental_rerun()
-    with col_next:
-        if current_page < total_pages:
-            if st.button("Next ➡️", key=f"next_page_{current_page}"):
-                st.session_state["candidate_summary_page"] = current_page + 1
-                st.experimental_rerun()
-    with col_page:
-        st.text(f"Page {current_page} of {total_pages} | Total Records: {total_records}")
+    # --- Pagination Controls ---
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col1:
+        if st.session_state.page_match_summary > 1:
+            if st.button("⬅️ Previous", key="prev_match"):
+                st.session_state.page_match_summary -= 1
+                st.rerun()
+    with col3:
+        if st.session_state.page_match_summary < total_pages_match:
+            if st.button("Next ➡️", key="next_match"):
+                st.session_state.page_match_summary += 1
+                st.rerun()
+    with col2:
+        st.text(f"Page {st.session_state.page_match_summary} of {total_pages_match} | Total Records: {total_records_match}")
+    st.markdown("---")
+
+    return df_match_paginated
 
 
 

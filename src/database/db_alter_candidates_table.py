@@ -31,3 +31,5 @@ def alter_candidates_table():
     add_column_if_not_exists("candidates", "TechnicalSkillsScore", "REAL", 0)
     add_column_if_not_exists("candidates", "OthersScore", "REAL", 0)
     add_column_if_not_exists("candidates", "Status", "TEXT", "'Pending'")
+    add_column_if_not_exists("candidates", "StatusRank", "INTEGER", 0)
+

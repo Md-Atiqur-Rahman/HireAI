@@ -61,14 +61,21 @@ def add_submitted_on_column():
 
     conn.close()
 
-
-def save_candidate(Name, email, phone, experience, total_score, skills, summary_text, category_id, score: Score = None, raw_rows=None):
+def save_candidate(Name, email, phone, experience, total_score, skills, summary_text, category_id,
+                   score: Score = None, raw_rows=None, status_Rank=1):
     conn = get_connection()
     cursor = conn.cursor()
 
     # System-generated current date
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     skills_str = json.dumps(skills) if isinstance(skills, list) else str(skills)
+
+    # Default values for score fields
+    experience_score = score.experience if score else 0
+    education_score = score.education if score else 0
+    technical_skills_score = score.technical_skills if score else 0
+    others_score = score.others if score else 0
+    status = score.status if score else "Not Evaluated"
 
     # Check if email already exists
     cursor.execute("SELECT 1 FROM candidates WHERE Email = ?", (email,))
@@ -80,7 +87,7 @@ def save_candidate(Name, email, phone, experience, total_score, skills, summary_
             UPDATE candidates
             SET Candidate = ?, Contact = ?, Experience = ?, TotalScore = ?, Skills = ?, 
                 SummaryText = ?, CategoryId = ?, UpdatedDate = ?, 
-                ExperienceScore = ?, EducationScore = ?, TechnicalSkillsScore = ?, OthersScore = ?, Status = ?
+                ExperienceScore = ?, EducationScore = ?, TechnicalSkillsScore = ?, OthersScore = ?, Status = ?, StatusRank = ?
             WHERE Email = ?
         """, (
             Name,
@@ -91,20 +98,21 @@ def save_candidate(Name, email, phone, experience, total_score, skills, summary_
             summary_text,
             category_id,
             now,
-            score.experience if score else 0,
-            score.education if score else 0,
-            score.technical_skills if score else 0,
-            score.others if score else 0,
-            score.status if score else "Not Evaluated",
+            experience_score,
+            education_score,
+            technical_skills_score,
+            others_score,
+            status,
+            status_Rank,
             email
         ))
     else:
         # Insert new record
         cursor.execute("""
             INSERT INTO candidates 
-            (Candidate, Email, Contact, Experience, TotalScore, Skills, SummaryText, CategoryId, SubmittedOn,
-             UpdatedDate, ExperienceScore, EducationScore, TechnicalSkillsScore, OthersScore, Status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (Candidate, Email, Contact, Experience, TotalScore, Skills, SummaryText, CategoryId,
+             SubmittedOn, UpdatedDate, ExperienceScore, EducationScore, TechnicalSkillsScore, OthersScore, Status, StatusRank)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             Name,
             email,
@@ -114,13 +122,14 @@ def save_candidate(Name, email, phone, experience, total_score, skills, summary_
             skills_str,
             summary_text,
             category_id,
-            now,
-            now,  # UpdatedDate same as SubmittedOn for new record
-            score.experience if score else 0,
-            score.education if score else 0,
-            score.technical_skills if score else 0,
-            score.others if score else 0,
-            score.status if score else "Not Evaluated"
+            now,   # SubmittedOn
+            now,   # UpdatedDate
+            experience_score,
+            education_score,
+            technical_skills_score,
+            others_score,
+            status,
+            status_Rank
         ))
 
     # --- Save raw_rows for candidate ---
@@ -135,13 +144,14 @@ def save_candidate(Name, email, phone, experience, total_score, skills, summary_
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (
                 email,
-                row["Category"],
-                row["Requirement"],
-                row["KeywordsMatched"],
-                row["SemanticMatches"],
-                row["MissingRequirements"],
-                row["MatchPercent"]
+                row.get("Category", ""),
+                row.get("Requirement", ""),
+                row.get("KeywordsMatched", ""),
+                row.get("SemanticMatches", ""),
+                row.get("MissingRequirements", ""),
+                row.get("MatchPercent", 0)
             ))
+
     conn.commit()
     conn.close()
     return True
@@ -192,31 +202,29 @@ def get_candidates_count(category_id=0):
 # ----------------- Get Paginated Candidates -----------------
 def get_candidates_paginated(category_id=0, per_page=5, offset=0):
     """
-    Returns a list of candidates for given category with pagination.
-    category_id=0 means all categories.
-    per_page = number of records per page
-    offset = number of records to skip
+    Returns candidates ordered by StatusRank DESC first, then TotalScore DESC.
     """
     conn = get_connection()
     cursor = conn.cursor()
-    #print("get_tget_candidates_paginatedotal_categories:",category_id)
+    
     if category_id == 0:
         cursor.execute(
-            "SELECT * FROM candidates ORDER BY TotalScore DESC LIMIT ? OFFSET ?",
+            "SELECT * FROM candidates ORDER BY StatusRank DESC, TotalScore DESC LIMIT ? OFFSET ?",
             (per_page, offset)
         )
     else:
         cursor.execute(
-            "SELECT * FROM candidates WHERE CategoryId = ? ORDER BY TotalScore DESC LIMIT ? OFFSET ?",
+            "SELECT * FROM candidates WHERE CategoryId = ? ORDER BY StatusRank DESC, TotalScore DESC LIMIT ? OFFSET ?",
             (category_id, per_page, offset)
         )
     
     rows = cursor.fetchall()
     conn.close()
     
-    # Convert sqlite3.Row objects to dicts
     candidates = [dict(row) for row in rows]
+    total_count= len(candidates)
     return candidates
+
 
 # ----------------- Get All Candidates (no pagination) -----------------
 def get_all_candidates():

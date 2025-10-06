@@ -56,12 +56,12 @@ def resume_uploader():
         
 
 
-        summary_text, total_exp, total_score,technicalskills,score_obj,raw_rows = evaluate_resume(resume_text, job_requirements)
+        summary_text, total_exp, total_score,technicalskills,score_obj,raw_rows,status_Rank = evaluate_resume(resume_text, job_requirements)
 
         email = extract_email(resume_text)
         phone = extract_phone(resume_text)
         name = extract_name_from_text(resume_text,email)
-        save_candidate(name, email, phone, total_exp, total_score,technicalskills , summary_text, selected_category_id,score_obj,raw_rows)
+        save_candidate(name, email, phone, total_exp, total_score,technicalskills , summary_text, selected_category_id,score_obj,raw_rows,status_Rank)
         st.subheader("Resume Evaluation Summary")
         st.text(summary_text) 
         

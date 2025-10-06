@@ -5,6 +5,10 @@ import plotly.express as px
 from src.database.db_candidates import get_candidates_group_by_category
 
 def show_chart_candidate_by_category(df,selected_category_id):
+    if df is None or df.empty:
+        st.warning("No data available for chart.")
+        return
+    
     col1, col2 = st.columns([2, 2])  # center column wider
 
     with col1:

@@ -1,14 +1,20 @@
 from collections import Counter
 from datetime import datetime
 import json
+import math
+import os
 import random
+import sys
+from numpy import ceil
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 # from src.database.db_keyword_match_analysis import candidate_match_summary_aggregated, candidate_match_summary_table, get_raw_candidate_data
+from src.feature.helper_requirement_analyzer.ranked_candidate_table import ranked_candidates_by_Score_table
 from src.database.db_keyword_match_analysis import candidate_match_summary_aggregated, candidate_match_summary_table, get_raw_candidate_data
-from src.feature.helper_requirement_analyzer.table import candidate_scores_table, ranked_candidates_by_Score_table
+from src.feature.helper_requirement_analyzer.table import candidate_scores_table
 from src.feature.dashboards.charts.candidate_score_experience_chart import candidate_score_vs_experience
 from src.feature.dashboards.charts.weekly_submission_to_skillis_chart import weeklysubmission_topskills_charts
 from src.feature.dashboards.charts.candidate_category_chart import show_chart_candidate_by_category
@@ -24,67 +30,86 @@ def dashboard_page():
     # --- Session State Initialization ---
     if "current_page" not in st.session_state:
         st.session_state.current_page = 1
-    if "selected_candidate" not in st.session_state:
-        st.session_state.selected_candidate = None
+    # if "selected_candidate" not in st.session_state:
+    #     st.session_state.selected_candidate = None
+    # --- Session State Initialization for pagination ---
+    if "page_match_summary" not in st.session_state:
+        st.session_state.page_match_summary = 1
+    if "page_scores_summary" not in st.session_state:
+        st.session_state.page_scores_summary = 1
+    if "page_ranked_candidates" not in st.session_state:
+        st.session_state.page_ranked_candidates = 1
+
+    per_page = 5
 
     # --- Job Category Filter ---
     categories = get_all_categories()
     category_dict = {cat['name']: cat['id'] for cat in categories}
+    # আগের category রাখো
+    if "prev_category" not in st.session_state:
+        st.session_state.prev_category = "All"
+
     selected_category_name = st.selectbox("Select Job Category", ["All"] + list(category_dict.keys()))
     selected_category_id = 0
     if selected_category_name != "All":
         selected_category_id = category_dict[selected_category_name]
 
-    # --- Pagination Setup ---
-    # print(selected_category_id)
+    # ✅ category change হলে pagination reset করো
+    if selected_category_name != st.session_state.prev_category:
+        st.session_state.page_match_summary = 1
+        st.session_state.page_scores_summary = 1
+        st.session_state.page_ranked_candidates = 1
+        st.session_state.current_page = 1
+        st.session_state.prev_category = selected_category_name
+        # --- Pagination Setup ---
     per_page = 5
-    total_records = get_candidates_count(selected_category_id)
-    total_pages = (total_records // per_page) + (1 if total_records % per_page else 0)
-    offset = (st.session_state.current_page - 1) * per_page
 
-    candidates = get_candidates_paginated(selected_category_id, per_page, offset)
-    if not candidates:
+    # ----- Candidate Scores & Ranked Candidates -----
+    total_records = get_candidates_count(selected_category_id)
+    total_pages_scores = ceil(total_records / per_page)
+    offset_scores = (st.session_state.current_page - 1) * per_page
+    df_candidates = pd.DataFrame(get_candidates_paginated(selected_category_id, per_page, offset_scores))
+    count_rows = len(df_candidates)
+    df_candidates["Rank"] = range(offset_scores + 1, offset_scores + len(df_candidates) + 1)
+    count_rows = len(df_candidates)
+    if df_candidates.empty:
         st.info("No candidate data found.")
         return
 
-    df = pd.DataFrame(candidates)
+    #--- KPI Cards ---
+    kpi_total_card(selected_category_id, total_records)
 
-    # --- Add Rank Column ---
-    df["Rank"] = range(offset + 1, offset + len(df) + 1)
+    # ----- Ranked Candidates Table -----
+
     
-    ## Chart starts
-    # --- Kpi Cards ---
-    kpi_total_card(selected_category_id,total_records)
-    # df_raw = get_raw_candidate_data()
-    #candidate_match_summary_paginated(df_raw)
-    # candidate_match_summary_aggregated(df_raw)
-    # candidate_match_summary_scores(df_raw)
-    # from src.database.db_keyword_match_analysis import get_raw_candidate_data, candidate_match_summary_aggregated
+    df_rank_table = ranked_candidates_by_Score_table(selected_category_id,per_page, total_records,total_pages_scores)
+    df_candidates = df_rank_table;  
 
-    # 1. Get raw candidate requirement rows from DB
+
+    #----- Candidate Match Summary -----
     df_raw = get_raw_candidate_data()
-    if df_raw is None or df_raw.empty:
-        st.warning("No raw candidate data available.")
-    else:
-        # 2. Aggregate numeric scores
+    if df_raw is not None and not df_raw.empty:
         df_aggregated = candidate_match_summary_aggregated(df_raw)
-        if df_aggregated is None or df_aggregated.empty:
-            st.warning("No aggregated candidate match summary available.")
-        else:
-            candidate_match_summary_table(df_aggregated)
+        if df_aggregated is not None and not df_aggregated.empty:
+            
+            df_match_paginated = candidate_match_summary_table(df_aggregated,per_page)
+            df_candidates = df_match_paginated
+            
 
+    # ----- Candidate Scores Summary -----
+    df_candidates_Scores = candidate_scores_table(selected_category_id, per_page, total_records,total_pages_scores)
+    df_candidates = df_candidates_Scores
+    
 
-    # --- Candidate Scores Table ---
-    candidate_scores_table(df, total_records)
-    # --- Candidate by category chart ---
-    show_chart_candidate_by_category(df,selected_category_id)
-     # ---------------- Weekly Submission and Topskills charts ----------------
+    #----- Charts -----
+    # st.write("🧾 df_candidates info:")
+    # st.write("Shape:", df_candidates.shape)
+    # st.write("Columns:", df_candidates.columns.tolist())
+    # st.dataframe(df_candidates.head())
+    show_chart_candidate_by_category(df_candidates, selected_category_id)
     weeklysubmission_topskills_charts(selected_category_id)
-    # ------------------ Candidate Score Distribution ---
-    candidate_score_vs_experience(df)
-    # ------------------ Table----------------------------
-    ranked_candidates_by_Score_table(df,total_records)
-  
+    candidate_score_vs_experience(df_candidates)
 
-
+    
+    
     
